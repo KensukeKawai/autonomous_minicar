@@ -65,45 +65,43 @@ extern volatile unsigned char u1g_mtcnt_xstop;
 #define ID_MTRUN_FWDREG 2
 #define ID_MTRUN_REVPWR 3
 #define ID_MTRUN_REVREG 4
-// #define ID_MTRUN_PWR 1
-// #define ID_MTRUN_REG 2
-// #define ID_MTRUN_FWD 1
-// #define ID_MTRUN_REV 2
 
 #define ID_MT_ADV 1
 #define ID_MT_BACK 2
 
 
-/***モータ制御***/
-#define CNT_DEADTIME ((unsigned short)(160))            //PCLK×最小OFF時間。ON⇒OFF⇒ONでちゃんとスイッチングできる最小カウント。PCLK×デッドタイム
-#define CNT_MIN_PRE ((unsigned short)(128))                 //PCLK×最小ON時間
-#define CNT_MAX ((unsigned short)(CNT_CARRIER-CNT_MIN_PRE))
-// #define CNT_MAX (unsigned short)((CNT_CARRIER-CNT_DEADTIME))
-#define CNT_MAX_PRE ((unsigned short)(3000)) 
-// #define CNT_MIN ((unsigned short)(CNT_CARRIER-CNT_MAX_PRE))
-#define CNT_MIN ((unsigned short)(CNT_CARRIER-CNT_MAX_PRE))
+/***電流制限パラメータ***/
+#define KP_FB ((float)(0.002))              //Pゲイン
+#define KI_FB ((float)(0.00001))            //Iゲイン。今は未使用。
+#define KP_ILIM ((float)(0.2))              //電流制限FB項のPゲイン
 
+#define I_MAX ((float)(2.5))                //力行時の電流制限値
+#define I_MIN ((float)(-2))                 //回生時の電流制限値
+
+/***Duty設定***/
+//力行時パラメータ
+#define DUTY_MIN ((float)(0.02))            //力行時の下限Duty
+#define DUTY_MAX ((float)(0.4))             //力行時の上限Duty
+#define DUTY_MINFF ((float)(0.02))          //FF項のオフセットDuty。目標回転数によらず最低限確保するDuty
+#define DUTY_MAXFF ((float)(0.2))           //FF項の最大Duty
+#define DUTY_MAXFB ((float)(0.2))           //FB項の最大Duty
+#define DUTY_MINILIM ((float)(-0.4))        //電流制限FB項の最大Duty。基本DUTY_MAXの符号反転。
+//回生時パラメータ
+#define DUTY_MINREG ((float)(0.02))         //回生時の下限Duty
+#define DUTY_MAXREG ((float)(0.3))          //回生時の上限Duty
+#define DUTY_MINFFREG ((float)(0.02))          //FF項のオフセットDuty。目標回転数によらず最低限確保するDuty
+#define DUTY_MAXFFREG ((float)(0.1))        //FF項の最大Duty
+#define DUTY_MAXFBREG ((float)(0.2))        //FB項の最大Duty
+#define DUTY_MINILIMREG ((float)(-0.3))     //電流制限FB項の最大Duty
+
+/***カウント設定***/
 #define CNT_OUTOFF (unsigned short)((CNT_CARRIER+10))
+#define CNT_MIN_PRE ((unsigned short)(128))                     //PCLK×最小ON時間
+#define CNT_MAX_PRE ((unsigned short)(6240))                    //PCLK×最大ON時間(=キャリア周期-最小OFF時間=デッドタイム)
+#define CNT_MAX ((unsigned short)(CNT_CARRIER-CNT_MIN_PRE))     //カウント反転処理
+#define CNT_MIN ((unsigned short)(CNT_CARRIER-CNT_MAX_PRE))     //カウント反転処理
+// #define CNT_DEADTIME ((unsigned short)(160))                 //PCLK×最小OFF時間。ON⇒OFF⇒ONでちゃんとスイッチングできる最小カウント。PCLK×デッドタイム
 
-#define DUTY_MIN ((float)(0.02))
-#define DUTY_MAX ((float)(0.4))        //0.98
-#define DUTY_MINFF ((float)(0.02))
-#define DUTY_MAXFF ((float)(0.3))
-#define DUTY_MAXFB ((float)(0.2))
-#define DUTY_MINILIM ((float)(-0.5))
-
-#define DUTY_MINREG ((float)(0.02))
-#define DUTY_MAXREG ((float)(0.2))
-#define DUTY_MAXFFREG ((float)(0.3))
-#define DUTY_MAXFBREG ((float)(0.3))
-#define DUTY_MINILIMREG ((float)(-0.5))
-
-#define KP_FB ((float)(0.002))
-#define KI_FB ((float)(0.00001))
-#define KP_ILIM ((float)(0.2))
-
-#define I_MAX ((float)(2.5))
-#define I_MIN ((float)(-2))
 
 /***原点学習***/
 #define CNT_ORIGINDUTY ((unsigned short)(6100))

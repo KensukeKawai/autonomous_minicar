@@ -25,18 +25,19 @@ void main()
 	initialize();
 
 	/*****初期モータ原点学習*****/
-			// while(u1g_rspicnt_idmoderq != ID_MODE_MTORIGIN);//JetsonからSPIで原点学習要求が来るまでwhileで待機
-	MTU.TSTR.BYTE = 0xC7;							//MTU0,1,2,3,4のTCNTカウント開始
+	while(u1g_rspicnt_idmoderq != ID_MODE_MTORIGIN);		//JetsonからSPIで原点学習要求が来るまでwhileで待機
+	PORT_GENERAL_P1 = 1;
+	while(1);
+	MTU.TSTR.BYTE = 0xC7;									//MTU0,1,2,3,4のTCNTカウント開始
 	vdg_mtcnt_outset(ID_MOTOR1, ID_ALLOFF, CNT_OUTOFF);
 	vdg_mtcnt_outset(ID_MOTOR2, ID_ALLOFF, CNT_OUTOFF);
-	// vdg_wait_nop(2000000);
-	vdg_mtcnt_mtorigin();							//原点学習処理
+	vdg_mtcnt_mtorigin();									//原点学習処理
 
 							u1g_mtcnt_idstagem1 = ID_STAGE2;
 
 	vdg_rspicnt_sendset();							//Jetsonに原点学習完了を知らせる
 
-			// while(u1g_rspicnt_idmoderq != ID_MODE_NORMAL);	//Jetsonから通常モード指令が来るまで待機
+	while(u1g_rspicnt_idmoderq != ID_MODE_NORMAL);	//Jetsonから通常モード指令が来るまで待機
 
 	while(1)
 	{
