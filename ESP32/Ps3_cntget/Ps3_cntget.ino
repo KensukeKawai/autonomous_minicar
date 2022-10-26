@@ -190,9 +190,25 @@
 //
 //}
 
+/*****Global変数定義*****/
+volatile unsigned char u1g_event_xcircle;
+volatile unsigned char u1g_event_xcross;
+volatile unsigned char u1g_event_xtriangle;
+volatile unsigned char u1g_event_idmode;
+
+/*****マクロ定義*****/
+#define ID_STOP 0
+#define ID_NORMAL 1
+#define ID_MTORIGIN 2
+
+
+
 void autocar_cntget()
 {
-  if ( Ps3.event.button_down.circle )  { Serial.write(255); }
+  if ( Ps3.event.button_down.start )  { Serial.write(255); }
+  if ( Ps3.event.button_down.circle ) { u1g_event_idmode = ID_NORMAL; }
+  if ( Ps3.event.button_down.cross ) { u1g_event_idmode = ID_STOP; }
+  if ( Ps3.event.button_down.triangle ) { u1g_event_idmode = ID_MTORIGIN; }
 }
 
 void setup()
@@ -213,6 +229,7 @@ void loop()
         delay(100);
         Serial.write(Ps3.data.analog.stick.ly+128);
         Serial.write(Ps3.data.analog.stick.rx+128);
+        Serial.write(u1g_event_idmode);
         switch ( Ps3.data.status.battery )
         {
           case ps3_status_battery_full:

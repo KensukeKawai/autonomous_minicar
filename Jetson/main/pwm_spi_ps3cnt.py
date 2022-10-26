@@ -51,8 +51,9 @@ def main():
                 uart.write(255)
 
                 while True:
-                    rec_ly = int(BytesToHex(uart.read()),16)
-                    rec_rx = int(BytesToHex(uart.read()),16)
+                    esp32rec_ly = int(BytesToHex(uart.read()),16)
+                    esp32rec_rx = int(BytesToHex(uart.read()),16)
+                    esp32rec_id = int(BytesToHex(uart.read()),16)
                     rec_spi0 = spi0.xfer2([rec_ly,rec_ly,rec_ly,rec_ly])
                     rec_spi1 = spi1.xfer2([rec_rx,rec_rx,rec_rx,rec_rx])
                     pwm1.start(rec_ly/255*100)
@@ -60,7 +61,7 @@ def main():
                     # rec_button = int(BytesToHex(uart.read()),16)
                     # if rec_button != 0: button = "ON"
                     # print("Ly : {} , Rx : {} , Button : {}".format(rec_ly,rec_rx,button))
-                    print("Ly:{:03} , Rx:{:03}, CS0: {}, CS1:{}".format(rec_ly,rec_rx,rec_spi0,rec_spi1))
+                    print("Ly:{:03} , Rx:{:03}, ID:{}, CS0: {}, CS1:{}".format(esp32rec_ly,esp32rec_rx,esp32rec_id,rec_spi0,rec_spi1))
 
     except KeyboardInterrupt:
         pwm1.stop()
