@@ -46,7 +46,7 @@ def main():
         while True:
             rec_first = int(BytesToHex(uart.read()),16)
             while rec_first == 255:
-                print("Pushed 'Circle Button' of PS3 Controller")
+                print("Pushed 'Start Button' of PS3 Controller")
                 time.sleep(1)
                 uart.write(255)
 
