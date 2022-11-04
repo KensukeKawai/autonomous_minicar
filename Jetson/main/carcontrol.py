@@ -1,6 +1,6 @@
 # General Import
 import time
-from typing import Set
+# from typing import Set
 
 # My Function import
 import peripheralfunc as pf
@@ -108,7 +108,7 @@ try:
                 
                 # print("Ly:{:03} , Rx:{:03}, ID:{}, CS0: {}, CS1:{}".format(esp32rec_ly,esp32rec_rx,esp32rec_id,rec_spi0,rec_spi1))
                 # print("nmtgtm1:{:03},nmtgtm2:{:03},DUTY_Fr:{:f},DUTY_Rr{:f},ID:{}".format(nmtgtm1,nmtgtm2,duty_fr_str,duty_rr_str,id_send_cntrlr))
-                print(flag_pwm_off)
+                # print(flag_pwm_off)
 
 except KeyboardInterrupt:
     pwm1.stop()
