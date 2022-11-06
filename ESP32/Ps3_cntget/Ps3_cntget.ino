@@ -226,7 +226,7 @@ void loop()
     {
       while(Serial.available())
       {
-        delay(50);
+        delay(100);
         Serial.write(Ps3.data.analog.stick.ly+128);
         Serial.write(Ps3.data.analog.stick.rx+128);
         Serial.write(u1g_event_idmode);
