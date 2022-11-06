@@ -57,6 +57,8 @@ void vdg_rspicnt_recget()
     {
         s4g_rspicnt_nm2tgt = (signed long)(u4t_rspicnt_spdrrectmp & BITMASK_NMTGT);
     }
+
+    RSPI0.SPDR.LONG = u4t_rspicnt_spdrrec;  // Tmp
 }
 
 void vdg_rspicnt_sendset()
@@ -90,4 +92,6 @@ void vdg_rspicnt_sendset()
     if(u1g_mtcnt_xnormal == 1){u4t_rspicnt_spdrset = u4t_rspicnt_spdrset | BITMASK_MODE_NORMAL;}
     if(u1g_mtcnt_xmtorigin == 1){u4t_rspicnt_spdrset = u4t_rspicnt_spdrset | BITMASK_MODE_MTORIGIN;}
     if(u1g_mtcnt_xstop == 1){u4t_rspicnt_spdrset = u4t_rspicnt_spdrset | BITMASK_MODE_STOP;}
+
+    // RSPI0.SPDR.LONG = u4t_rspicnt_spdrset;
 }

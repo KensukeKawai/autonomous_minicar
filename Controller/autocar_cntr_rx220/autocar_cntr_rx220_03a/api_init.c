@@ -44,10 +44,10 @@ void vdg_HW_init()
 	SYSTEM.MSTPCRA.BIT.MSTPA9 = 0;				//MTUモジュールストップ状態解除
 	SYSTEM.MSTPCRA.BIT.MSTPA17 = 0;				//S12ADモジュールストップ状態解除
  	SYSTEM.MSTPCRB.BIT.MSTPB30 = 0;				//SCI1モジュールストップ状態解除
-	SYSTEM.MSTPCRB.BIT.MSTPB17 = 0;				//RSPI0モジュールストップ状態解除
+	// SYSTEM.MSTPCRB.BIT.MSTPB17 = 0;				//RSPI0モジュールストップ状態解除
 	//CMPAはアナログモジュールのため設定不要
 	/***モジュールストップ解除設定***/
-	
+	MSTP(RSPI0) = 0;
 	/***プロテクト設定***/
 	SYSTEM.PRCR.WORD = 0xA500;					//PRCRレジスタに、各レジスタへの書込み禁止設定
 	/***プロテクト設定***/
@@ -114,7 +114,8 @@ void vdg_MPC_init()
 	/***APIに合わせてMPCでピン割り付け***/
 	
 	//P**PFSレジスタへの書き込み禁止
-	MPC.PWPR.BIT.PFSWE = 0;		
+	MPC.PWPR.BIT.PFSWE = 0;
+	MPC.PWPR.BIT.B0WI = 1;
 
 	/***ポートモードレジスタ設定(汎用入出力or周辺機能)。P**PFSのうち”PSEL”に対してのみPMRを定義***/
 	PORTB.PMR.BIT.B3 = 1;		//PB3(CN2-03)をMTIOC0A
@@ -237,40 +238,41 @@ void vdg_SCI_init()
 
 void vdg_SPI_init()
 {
+	volatile unsigned char u1t_spcr_read;
+
 	//SSLPレジスタ設定
 	RSPI0.SSLP.BYTE = 0x00;			//SSL0~3のチップセレクト時極性を「アクティブLow」
 	//SPDCRレジスタ設定
-	RSPI0.SPDCR.BIT.SPFC = 1;		//フレーム数1（使用するSPCMD*の数を指定する）
+	RSPI0.SPDCR.BIT.SPFC = 0;		//フレーム数1（使用するSPCMD*の数を指定する）
 	RSPI0.SPDCR.BIT.SPRDTD = 0;		//SPDRの読み出し先バッファを受信バッファに設定
-	RSPI0.SPDCR.BIT.SPLW = 1;		//SPDRレジスタへロングワードアクセス
+	RSPI0.SPDCR.BIT.SPLW = 1;		//SPDRレジスタへロングワードアクセス 1
 	//SPCR2レジスタ設定
 	RSPI0.SPCR2.BIT.SPPE = 0;		//送信データにパリティビット付与しない、受信データにパリティチェックを行わない
-	RSPI0.SPCR2.BIT.SPIIE =  0;		//アイドル割込み要求の発生を禁止
+	RSPI0.SPCR2.BIT.SPIIE = 0;		//アイドル割込み要求の発生を禁止
 	//SPCMD0レジスタ設定
 	RSPI0.SPCMD0.BIT.CPHA = 0;		//SPIモード0
 	RSPI0.SPCMD0.BIT.CPOL = 0;		//アイドル時のRSPCKをLow設定
 	RSPI0.SPCMD0.BIT.SSLA = 0;		//スレーブモードのため0設定
 	RSPI0.SPCMD0.BIT.SSLKP = 0;		//スレーブモードのため0設定
-	RSPI0.SPCMD0.BIT.SPB = 2;		//データ長を32bit
+	RSPI0.SPCMD0.BIT.SPB = 2;		//データ長を32bit  2
 	RSPI0.SPCMD0.BIT.LSBF = 0;		//MSBファースト
 	
 	//割込みコントローラの設定
-	ICU.IER[0x05].BIT.IEN5 = 1;		//受信バッファフル割込み許可
+	IEN( RSPI0, SPRI0 )=1;			//受信バッファフル割込み許可
+	IPR( RSPI0, SPRI0 )=14;			//SPI受信割込み優先度
 
-	//SPCRレジスタ設定
-	RSPI0.SPCR.BYTE = 0xc0;
-	//上記0xC0の内訳は以下
-	// RSPI0.SPCR.BIT.SPMS = 0;		//SPI動作
-	// RSPI0.SPCR.BIT.TXMD = 0;		//全二重同期式シリアル通信
-	// RSPI0.SPCR.BIT.MODFEN = 0;		//モードフォルトエラー検出を禁止
-	// RSPI0.SPCR.BIT.MSTR = 0;		//スレーブモード
-	// RSPI0.SPCR.BIT.SPEIE = 0;		//RSPIエラー割込み要求の発生を禁止
-	// RSPI0.SPCR.BIT.SPTIE = 0;		//送信割込み要求の発生を禁止
-	// RSPI0.SPCR.BIT.SPRIE = 1;		//受信割込み要求の発生を許可
-	// RSPI0.SPCR.BIT.SPE = 1;			//RSPI機能を有効
+	// SPCRレジスタをリード(理由不明だがマニュアルに記載)
+	RSPI0.SPCR.BYTE;
 
-	//ロングワードアクセスする場合は以下で行う
-	//RSPI0.SPDR.LONG
+	// 各フラグリセット
+	RSPI0.SPSR.BIT.OVRF = 0;
+	RSPI0.SPSR.BIT.MODF = 0;
+	RSPI0.SPSR.BIT.PERF = 0;
+	// RSPI0.SPCR2.BIT.SPIIE =  0;		//アイドル割込み要求の発生を禁止
+
+	// 機能有効、受信バッファフル割込み許可
+	RSPI0.SPCR.BIT.SPE = 1;			//RSPI機能を有効
+	RSPI0.SPCR.BIT.SPRIE = 1;		//受信割込み要求の発生を許可
 }
 
 void vdg_IRQ_init()
@@ -313,7 +315,7 @@ void vdg_IPR_init()
 	ICU.IPR[114].BIT.IPR = 15;		//TGIA0(MTU0.TGRA)のコンペアマッチ割込み優先度
 	ICU.IPR[102].BIT.IPR = 13;		//S12ADI0外部割込み優先度
 	// ICU.IPR[218].BIT.IPR = 12;		//SCI1割込み優先度（送受信共通）
-	ICU.IPR[44].BIT.IPR = 0;		//SPI受信割込み優先度
+	// ICU.IPR[45].BIT.IPR = 14;		//SPI受信割込み優先度
 	// ICU.IPR[64].BIT.IPR = 1;		//IRQ0割込み優先度
 	// ICU.IPR[65].BIT.IPR = 1;		//IRQ1割込み優先度
 	// ICU.IPR[66].BIT.IPR = 1;		//IRQ2割込み優先度

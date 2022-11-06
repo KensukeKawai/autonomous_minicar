@@ -88,7 +88,10 @@ void Excep_S12AD_S12ADI0()	//完了
 //Jetson指令受信後次タスクでJetsonに送信したいデータをLong Wordで入れておく
 void Excep_RSPI0_SPRI0()
 {
+	// RSPI0.SPCR.BIT.SPRIE = 0;		//受信割込み要求の発生を許可
+	// PORT_GENERAL_P1 != PORT_GENERAL_P1;
 	u1g_exspri0_xrspirec = 1;		//JetsonからのSPI受信完了フラグON
+	// RSPI0.SPDR.LONG = 0;
 }
 
 

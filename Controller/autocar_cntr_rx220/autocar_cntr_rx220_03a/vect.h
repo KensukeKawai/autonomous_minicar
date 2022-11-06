@@ -84,7 +84,7 @@ void Excep_CAC_OVFF(void);
 void Excep_RSPI0_SPEI0(void);
 
 // RSPI0 SPRI0
-#pragma interrupt (Excep_RSPI0_SPRI0(vect=45))
+#pragma interrupt (Excep_RSPI0_SPRI0(enable,vect=45))
 void Excep_RSPI0_SPRI0(void);
 
 // RSPI0 SPTI0

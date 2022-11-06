@@ -16,18 +16,36 @@ void initialize()
 	vdg_S12AD_init();
 	// vdg_SCI_init();
 	vdg_SPI_init();
-	vdg_IRQ_init();
+	// vdg_IRQ_init();
 	vdg_IPR_init();
 }
 
 void main()
 {
+	volatile unsigned char mtorigin_flag;
 	initialize();
+	MTU.TSTR.BYTE = 0xC7;			//Tmp
 
 	/*****初期モータ原点学習*****/
-	while(u1g_rspicnt_idmoderq != ID_MODE_MTORIGIN);		//JetsonからSPIで原点学習要求が来るまでwhileで待機
-	PORT_GENERAL_P1 = 1;
-	while(1);
+	// Tmp -s-
+	while(1)
+	{
+		while(u1g_extgia0_interrupt != 1);			//TGIA0コンペアマッチするまで待機
+		u1g_extgia0_interrupt = 0;					//定周期タスク開始トリガリセット
+		if(u1g_exspri0_xrspirec == 1)
+		{
+			u1g_exspri0_xrspirec = 0;
+			vdg_rspicnt_recget();
+		}
+		if(u1g_rspicnt_idmoderq >= 1)		//JetsonからSPIで原点学習要求が来るまでwhileで待機
+		{
+			mtorigin_flag == 1;
+			PORT_GENERAL_P1 = 1;
+		}
+		vdg_rspicnt_sendset();
+	}
+	// Tmp -e-
+
 	MTU.TSTR.BYTE = 0xC7;									//MTU0,1,2,3,4のTCNTカウント開始
 	vdg_mtcnt_outset(ID_MOTOR1, ID_ALLOFF, CNT_OUTOFF);
 	vdg_mtcnt_outset(ID_MOTOR2, ID_ALLOFF, CNT_OUTOFF);
@@ -39,6 +57,7 @@ void main()
 
 	while(u1g_rspicnt_idmoderq != ID_MODE_NORMAL);	//Jetsonから通常モード指令が来るまで待機
 
+	// 原点学習処理⇒通常モード遷移後のループ処理に移行
 	while(1)
 	{
 										//20221016 デバッグ用
@@ -47,7 +66,7 @@ void main()
 		while(u1g_extgia0_interrupt != 1);			//TGIA0コンペアマッチするまで待機
 		u1g_extgia0_interrupt = 0;					//定周期タスク開始トリガリセット
 
-										PORT_GENERAL_P1 = !PORT_GENERAL_P1;
+										// PORT_GENERAL_P1 = !PORT_GENERAL_P1;
 
 
 		/********************今回周期出力設定用の処理********************/
