@@ -78,6 +78,9 @@ void main()
 	// 初回は必ずJetsonから原点学習要求が来るまで待機
 	recwait(ID_MODE_MTORIGIN);
 	vdg_mtcnt_mtorigin();									//原点学習処理
+	//メインループ初回でフリーホイール状態にしておくために全出力とカウント値をOFFに設定しておく
+	vdg_mtcnt_freewheelm1();
+	vdg_mtcnt_freewheelm2();
 							// u1g_mtcnt_idstagem1 = ID_STAGE2;
 
 	//Jetsonから通常モード指令が来るまで待機⇒原点学習完了時点で初回はJteson側でノーマルモードに自動遷移で良いかも
@@ -90,10 +93,6 @@ void main()
 	// vdg_mtcnt_orthantjdg();						//LPF後回転数と「目標Nm-LPF後回転数」から4象限状態判定
 	// vdg_mtcnt_stagephasejdg();					//進行方向と現在電気角からステージ設定(stagejdg)
 	// /*****idstagem12の算出*****/
-
-	//メインループ初回でフリーホイール状態にしておくために全出力とカウント値をOFFに設定しておく
-	vdg_mtcnt_freewheelm1();
-	vdg_mtcnt_freewheelm2();
 
 	/********** メインループ処理 **********/
 	while(1)

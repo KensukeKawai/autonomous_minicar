@@ -731,8 +731,8 @@ void vdg_mtcnt_mtorigin()
 	vdg_wait_nop(2000000);			//原点学習処理しエンコーダカウント初期化完了後所定時間待ち
 
 	//エンコーダTCNTカウントを学習すればロータ位置ホールド不要のため出力OFFにしておく
-	vdg_mtcnt_outset(ID_MOTOR1, ID_ALLOFF, CNT_OUTOFF);
-	vdg_mtcnt_outset(ID_MOTOR2, ID_ALLOFF, CNT_OUTOFF);
+	// vdg_mtcnt_outset(ID_MOTOR1, ID_ALLOFF, CNT_OUTOFF);
+	// vdg_mtcnt_outset(ID_MOTOR2, ID_ALLOFF, CNT_OUTOFF);
 
 	// // 原点学習が完了したことをJetsonに送信する
 	// u4t_mtcnt_spdrset = BITMASK_MODE_MTORIGIN;
@@ -740,11 +740,6 @@ void vdg_mtcnt_mtorigin()
 
 	// u1g_mtcnt_idstagem1 = ID_STAGE2;		// stage1ホールド状態を60degのstage2として少し進角させておく
 
-	// 原点学習後はSTAGE1、Dutyカウント=0にしておく
-	// u1g_mtcnt_idstagem1 = ID_STAGE1;
-	// u1g_mtcnt_idstagem2 = ID_STAGE1;
-	u2g_mtcnt_cntm1 = 0;
-	u2g_mtcnt_cntm2 = 0;
 
 	// JetsonにSTOPを通知し原点学習が完了した状態を知らせる
 	u1g_mtcnt_idmode = ID_MODE_STOP;
