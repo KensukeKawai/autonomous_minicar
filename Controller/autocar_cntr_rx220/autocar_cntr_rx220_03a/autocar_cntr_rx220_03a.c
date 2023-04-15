@@ -139,7 +139,7 @@ void main()
 		{
 			case ID_MODE_NORMAL:					//通常運転モード
 				/*****Motor1*****/
-				u1g_mtcnt_xnormal = 1;
+				u1g_mtcnt_idmode = ID_MODE_NORMAL;
 				if ((u1g_mtcnt_idorthantm1==ID_MTRUN_FWDPWR) || (u1g_mtcnt_idorthantm1==ID_MTRUN_REVPWR))
 				{
 					vdg_mtcnt_tgrpwrcalm1();			//力行時Duty算出
@@ -165,12 +165,14 @@ void main()
 			break;
 
 			case ID_MODE_MTORIGIN:			//原点学習モード
+				u1g_mtcnt_idmode = ID_MODE_MTORIGIN;
 				//走行中か否かで先に停車処理させるか否か決める
 				//もし停車状態で原点学習できる状態なら実施
 				vdg_mtcnt_mtorigin();
 			break;
 
 			case ID_MODE_STOP:						//車両停車モード
+				u1g_mtcnt_idmode = ID_MODE_STOP;
 				//まだ走行中の場合は何か特殊処理する・・・？
 				// 次周期の変数をOFF状態にしておく
 				vdg_mtcnt_freewheelm1();
@@ -183,7 +185,7 @@ void main()
 		/********************次周期出力用の処理********************/
 
 		//SPIバッファに送信データ書き込み
-		vdg_rspicnt_sendset();
+		vdg_rspicnt_sendset(u1g_mtcnt_idmode);
 
 		// //PCとのシリアル通信必要だったら処理入れる。今のところマストではない。
 	}//while
