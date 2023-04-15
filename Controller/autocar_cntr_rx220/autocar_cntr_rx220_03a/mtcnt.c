@@ -10,6 +10,8 @@ volatile unsigned char u1g_mtcnt_idstagem2;
 volatile unsigned char u1g_mtcnt_idorthantm1;
 volatile unsigned char u1g_mtcnt_idorthantm2;
 
+volatile unsigned char u1g_mtcnt_idmode;
+
 volatile unsigned short u2g_mtcnt_cntm1 = CNT_MAX;
 volatile unsigned short u2g_mtcnt_cntm2 = CNT_MAX;
 
@@ -123,12 +125,9 @@ void vdg_mtcnt_stagejdg(unsigned char motor, unsigned char id_direction)
 	}
 }
 
-//APIでのOFF出力がGNDにならず浮いているため、PMRを汎用出力LOWにする
+// 前周期で設定されたdutyカウントと直前で判定したステージモードから各Phase出力設定
 void vdg_mtcnt_outset(unsigned char motor, unsigned char mode, unsigned short cntduty)
 {
-
-//前周期で設定されたdutyカウントと直前で判定したステージモードから出力
-
 	switch(motor)
 	{
 		case ID_MOTOR1:
@@ -429,6 +428,7 @@ void vdg_mtcnt_stagephasejdg()
 {
 	//象限状態からロータ角に対する各相出力有無を判断
 	//正転力行、逆転回生のときは前進方向に進角させる
+	// Motor1
 	if((u1g_mtcnt_idorthantm1==ID_MTRUN_FWDPWR) || (u1g_mtcnt_idorthantm1==ID_MTRUN_REVREG))
 	{
 		vdg_mtcnt_stagejdg(ID_MOTOR1,ID_MT_ADV);	//現在電気角から前進方向へ進角させる相出力設定
@@ -438,6 +438,7 @@ void vdg_mtcnt_stagephasejdg()
 		vdg_mtcnt_stagejdg(ID_MOTOR1,ID_MT_BACK);	//現在電気角から後進方向へ進角させる相出力設定
 	}
 
+	// Motor2
 	if((u1g_mtcnt_idorthantm2==ID_MTRUN_FWDPWR) || (u1g_mtcnt_idorthantm2==ID_MTRUN_REVREG))
 	{
 		vdg_mtcnt_stagejdg(ID_MOTOR2,ID_MT_ADV);	//現在電気角から前進方向へ進角させる相出力設定
@@ -679,6 +680,18 @@ void vdg_mtcnt_tgrregcalm2()
 	u2g_mtcnt_cntm2 = u2s_mtcnt_cntm2pre;
 }
 
+void vdg_mtcnt_freewheelm1()
+{
+	u1g_mtcnt_idstagem1 = ID_ALLOFF;
+	u2g_mtcnt_cntm1 = CNT_OUTOFF;
+}
+
+void vdg_mtcnt_freewheelm2()
+{
+	u1g_mtcnt_idstagem2 = ID_ALLOFF;
+	u2g_mtcnt_cntm2 = CNT_OUTOFF;
+}
+
 void vdg_mtcnt_mtorigin()
 {
 	/***************static変数定義***************/
@@ -686,10 +699,16 @@ void vdg_mtcnt_mtorigin()
 	volatile static unsigned char u1s_mtcnt_idstage = 0;
 
 	/***************テンポラリ変数定義***************/
-	
-	u1g_mtcnt_xnormal = 0;
-	u1g_mtcnt_xmtorigin = 0;
-	u1g_mtcnt_xstop = 0;
+	volatile unsigned long u4t_mtcnt_spdrset;
+
+	// Jetsonに原点学習中であることを通知
+	// u1g_mtcnt_idmode = ID_MODE_MTORIGIN;
+	vdg_rspicnt_sendset(ID_MODE_MTORIGIN);
+
+	// vdg_rspicnt_sendset(u1g_mtcnt_idmode);
+	// u4t_mtcnt_spdrset = BITMASK_MODE_MTORIGIN;
+
+	// 走行開始前にロータ位相をPhase1ホールドにしておくために7回実施
 	while (u1s_mtcnt_cntoriginrot < 7)
 	{
 		u1s_mtcnt_cntoriginrot++;
@@ -704,16 +723,30 @@ void vdg_mtcnt_mtorigin()
 		vdg_wait_nop(2000000);
 	}
 
-	u1g_mtcnt_xmtorigin = 1;
-	u1g_mtcnt_xnormal = 1;
-
+	//エンコーダ角度情報を保存するためにロータ位置を固定状態にしておく
 	//エンコーダTCNTカウントを「カウンタ中点＋原点学習後角度分カウント」から始めるために書き込み
 	MTU_M1_ENCTCNT = TCNT_ENC_DEFAULT;
 	MTU_M2_ENCTCNT = TCNT_ENC_DEFAULT;
 
 	vdg_wait_nop(2000000);			//原点学習処理しエンコーダカウント初期化完了後所定時間待ち
 
-	//ループに移行する前に出力は明示的にOFFにしておく
+	//エンコーダTCNTカウントを学習すればロータ位置ホールド不要のため出力OFFにしておく
 	vdg_mtcnt_outset(ID_MOTOR1, ID_ALLOFF, CNT_OUTOFF);
 	vdg_mtcnt_outset(ID_MOTOR2, ID_ALLOFF, CNT_OUTOFF);
+
+	// // 原点学習が完了したことをJetsonに送信する
+	// u4t_mtcnt_spdrset = BITMASK_MODE_MTORIGIN;
+	// RSPI0.SPDR.LONG = u4t_mtcnt_spdrset;
+
+	// u1g_mtcnt_idstagem1 = ID_STAGE2;		// stage1ホールド状態を60degのstage2として少し進角させておく
+
+	// 原点学習後はSTAGE1、Dutyカウント=0にしておく
+	// u1g_mtcnt_idstagem1 = ID_STAGE1;
+	// u1g_mtcnt_idstagem2 = ID_STAGE1;
+	u2g_mtcnt_cntm1 = 0;
+	u2g_mtcnt_cntm2 = 0;
+
+	// JetsonにSTOPを通知し原点学習が完了した状態を知らせる
+	u1g_mtcnt_idmode = ID_MODE_STOP;
+	vdg_rspicnt_sendset(ID_MODE_STOP);
 }

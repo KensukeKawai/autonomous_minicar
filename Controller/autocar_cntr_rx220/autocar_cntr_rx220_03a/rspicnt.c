@@ -1,5 +1,6 @@
 
 #include "common.h"
+#include "mtcnt.h"
 
 /***************グローバル変数定義***************/
 volatile unsigned char u1g_rspicnt_idmoderq;
@@ -58,40 +59,56 @@ void vdg_rspicnt_recget()
         s4g_rspicnt_nm2tgt = (signed long)(u4t_rspicnt_spdrrectmp & BITMASK_NMTGT);
     }
 
-    RSPI0.SPDR.LONG = u4t_rspicnt_spdrrec;  // Tmp
+    // RSPI0.SPDR.LONG = u4t_rspicnt_spdrrec;  // Tmp
 }
 
-void vdg_rspicnt_sendset()
+void vdg_rspicnt_sendset(unsigned char mode)
 {
     volatile unsigned long u4t_rspicnt_nmsm1;
     volatile unsigned long u4t_rspicnt_nmsm2;
     volatile unsigned long u4t_rspicnt_spdrset;
 
-    //実モータ回転数の符号判定処理
-    if(s4g_mtcnt_nmsm1 >= 0)
+    //モータコントローラ内のモータ制御状態に応じてJetsonに状態と回転数を通知
+    switch(mode)
     {
-        u4t_rspicnt_nmsm1 = (unsigned long)(s4g_mtcnt_nmsm1);
-    }
-    else
-    {
-        u4t_rspicnt_nmsm1 = (unsigned long)(abs(s4g_mtcnt_nmsm1));
-        u4t_rspicnt_nmsm1 = u4t_rspicnt_nmsm1 | BITMASK_ROTDIR;
-    }
-    if(s4g_mtcnt_nmsm2 >= 0)
-    {
-        u4t_rspicnt_nmsm2 = (unsigned long)(s4g_mtcnt_nmsm2);
-    }
-    else
-    {
-        u4t_rspicnt_nmsm2 = (unsigned long)(abs(s4g_mtcnt_nmsm2));
-        u4t_rspicnt_nmsm2 = u4t_rspicnt_nmsm2 | BITMASK_ROTDIR;
+        case ID_MODE_NORMAL:
+            //実モータ回転数の符号判定処理
+            if(s4g_mtcnt_nmsm1 >= 0)
+            {
+                u4t_rspicnt_nmsm1 = (unsigned long)(s4g_mtcnt_nmsm1);
+            }
+            else
+            {
+                u4t_rspicnt_nmsm1 = (unsigned long)(abs(s4g_mtcnt_nmsm1));
+                u4t_rspicnt_nmsm1 = u4t_rspicnt_nmsm1 | BITMASK_ROTDIR;
+            }
+            if(s4g_mtcnt_nmsm2 >= 0)
+            {
+                u4t_rspicnt_nmsm2 = (unsigned long)(s4g_mtcnt_nmsm2);
+            }
+            else
+            {
+                u4t_rspicnt_nmsm2 = (unsigned long)(abs(s4g_mtcnt_nmsm2));
+                u4t_rspicnt_nmsm2 = u4t_rspicnt_nmsm2 | BITMASK_ROTDIR;
+            }
+            u4t_rspicnt_spdrset = u4t_rspicnt_nmsm1 | (u4t_rspicnt_nmsm2<<BITSHIFT_NM2);
+            u4t_rspicnt_spdrset = u4t_rspicnt_spdrset | BITMASK_MODE_NORMAL;
+        break;
+
+        case ID_MODE_MTORIGIN:
+            u4t_rspicnt_spdrset = 0;
+            u4t_rspicnt_spdrset = u4t_rspicnt_spdrset | BITMASK_MODE_MTORIGIN;
+        break;
+        
+        case ID_MODE_STOP:
+            u4t_rspicnt_spdrset = 0;
+            u4t_rspicnt_spdrset = u4t_rspicnt_spdrset | BITMASK_MODE_STOP;
+        break;
     }
 
-    u4t_rspicnt_spdrset = u4t_rspicnt_nmsm1 | (u4t_rspicnt_nmsm2<<BITSHIFT_NM2);
+    // if( u1g_mtcnt_xnormal == 1){u4t_rspicnt_spdrset = u4t_rspicnt_spdrset | BITMASK_MODE_NORMAL;}
+    // else if(u1g_mtcnt_xmtorigin == 1){u4t_rspicnt_spdrset = u4t_rspicnt_spdrset | BITMASK_MODE_MTORIGIN;}
+    // else if(u1g_mtcnt_xstop == 1){u4t_rspicnt_spdrset = u4t_rspicnt_spdrset | BITMASK_MODE_STOP;}
 
-    if(u1g_mtcnt_xnormal == 1){u4t_rspicnt_spdrset = u4t_rspicnt_spdrset | BITMASK_MODE_NORMAL;}
-    if(u1g_mtcnt_xmtorigin == 1){u4t_rspicnt_spdrset = u4t_rspicnt_spdrset | BITMASK_MODE_MTORIGIN;}
-    if(u1g_mtcnt_xstop == 1){u4t_rspicnt_spdrset = u4t_rspicnt_spdrset | BITMASK_MODE_STOP;}
-
-    // RSPI0.SPDR.LONG = u4t_rspicnt_spdrset;
+    RSPI0.SPDR.LONG = u4t_rspicnt_spdrset;
 }

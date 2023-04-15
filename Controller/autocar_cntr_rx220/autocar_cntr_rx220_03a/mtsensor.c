@@ -36,7 +36,7 @@ void vdg_mtsensor_encoder()
 
     //Motor1
     /*****回転方向検出、カウント前回値差分算出*****/
-    u2s_mtsensor_enccntm1 = MTU2.TCNT;
+    u2s_mtsensor_enccntm1 = MTU_M1_ENCTCNT;
     s4t_mtsensor_denccntm1 = (signed long)(u2s_mtsensor_enccntm1)-(signed long)(u2s_mtsensor_enccntm1z);
     if(s4t_mtsensor_denccntm1>=0){u1g_mtsensor_rotdirm1=0;}
     else{u1g_mtsensor_rotdirm1=1;}
@@ -47,14 +47,14 @@ void vdg_mtsensor_encoder()
     if(u2s_mtsensor_enccntm1>=TCNT_ENC_HIGH)
     {
         u2s_mtsensor_enccntm1 = u2s_mtsensor_enccntm1 - TCNT_ENC_360M;
-        MTU2.TCNT = u2s_mtsensor_enccntm1;
+        MTU_M1_ENCTCNT = u2s_mtsensor_enccntm1;
         f4g_mtsensor_manglem1 = (float)(u2s_mtsensor_enccntm1-TCNT_ENC_MID) * (float)KPLS2MANGLE;
     }
     //カウント≦LOW
     else if(u2s_mtsensor_enccntm1<=TCNT_ENC_LOW)
     {
         u2s_mtsensor_enccntm1 = u2s_mtsensor_enccntm1 + TCNT_ENC_360M;
-        MTU2.TCNT = u2s_mtsensor_enccntm1;
+        MTU_M1_ENCTCNT = u2s_mtsensor_enccntm1;
         f4g_mtsensor_manglem1 = (float)(u2s_mtsensor_enccntm1-TCNT_ENC_LOW) * (float)KPLS2MANGLE;
     }
     //MID≦カウント＜HIGH
@@ -70,7 +70,7 @@ void vdg_mtsensor_encoder()
 
     //Motor2
     /*****回転方向検出、カウント前回値差分算出*****/
-    u2s_mtsensor_enccntm2 = MTU1.TCNT;
+    u2s_mtsensor_enccntm2 = MTU_M2_ENCTCNT;
     s4t_mtsensor_denccntm2 = (signed long)(u2s_mtsensor_enccntm2)-(signed long)(u2s_mtsensor_enccntm2z);
     if(s4t_mtsensor_denccntm2>=0){u1g_mtsensor_rotdirm2=0;}
     else{u1g_mtsensor_rotdirm2=1;}
@@ -81,14 +81,14 @@ void vdg_mtsensor_encoder()
     if(u2s_mtsensor_enccntm2>=TCNT_ENC_HIGH)
     {
         u2s_mtsensor_enccntm2 = u2s_mtsensor_enccntm2 - TCNT_ENC_360M;
-        MTU1.TCNT = u2s_mtsensor_enccntm2;
+        MTU_M2_ENCTCNT = u2s_mtsensor_enccntm2;
         f4g_mtsensor_manglem2 = (float)(u2s_mtsensor_enccntm2-TCNT_ENC_MID) * (float)KPLS2MANGLE;
     }
     //カウント≦LOW
     else if(u2s_mtsensor_enccntm2<=TCNT_ENC_LOW)
     {
         u2s_mtsensor_enccntm2 = u2s_mtsensor_enccntm2 + TCNT_ENC_360M;
-        MTU1.TCNT = u2s_mtsensor_enccntm2;
+        MTU_M2_ENCTCNT = u2s_mtsensor_enccntm2;
         f4g_mtsensor_manglem2 = (float)(u2s_mtsensor_enccntm2-TCNT_ENC_LOW) * (float)KPLS2MANGLE;
     }
     //MID≦カウント＜HIGH

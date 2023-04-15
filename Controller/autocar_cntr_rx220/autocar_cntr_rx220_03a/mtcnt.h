@@ -23,6 +23,8 @@ extern volatile unsigned char u1g_mtcnt_idstagem2;
 extern volatile unsigned char u1g_mtcnt_idorthantm1;
 extern volatile unsigned char u1g_mtcnt_idorthantm2;
 
+extern volatile unsigned char u1g_mtcnt_idmode;
+
 extern volatile unsigned short u2g_mtcnt_cntm1;
 extern volatile unsigned short u2g_mtcnt_cntm2;
 
