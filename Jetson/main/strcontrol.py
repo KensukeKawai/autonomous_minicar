@@ -18,15 +18,16 @@ DUTY_MAX_RR = DUTY_MID_RR + DDUTY_RR
 DUTY_MIN_RR = DUTY_MID_RR - DDUTY_RR
 KSLOPE_DUTY_RR = (DUTY_MAX_RR-DUTY_MIN_RR)/255
 
-class PWM():
+
+class STRCNT():
     # コンストラクタでインスタンス生成
     def __init__(self,output):
         # PWM GPIO Initialize
-        GPIO.setmode(GPIO.BOARD)
+        # GPIO.setmode(GPIO.BOARD)
         GPIO.setup(output, GPIO.OUT, initial=GPIO.HIGH)
         self.str = GPIO.PWM(output, F_CARRIER)
         self.status_front = 0
-        self.statys_rear = 0
+        self.status_rear = 0
 
     # メソッド
     def FrontOut(self,rx):
