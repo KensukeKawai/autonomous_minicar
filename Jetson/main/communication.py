@@ -54,16 +54,4 @@ class SPI():
         self.nmtgtm2 = nmtgtm2 << BITSHIFT_NM2
 
         # ID処理
-        self.id 
-
-def SPI_set(speed):
-    # チップセレクトごとにspiインスタンス生成
-    spi1 = spidev.SpiDev()
-    spi2 = spidev.SpiDev()
-    spi1.open(0, 0)                # (基本0、チップセレクト0 or 1）
-    spi1.max_speed_hz = speed      #通信周波数設定。最低100kHz。
-    spi2.open(0, 1)                # (基本0、チップセレクト0 or 1）
-    spi2.max_speed_hz = speed      #通信周波数設定。最低100kHz。
-    spi1.mode = 0               #デフォルト0のため書き込み不要。MOSIのシフト、SCLKのサンプリング立ち上がり or 立ち下がり
-    spi2.mode = 0               #デフォルト0のため書き込み不要。MOSIのシフト、SCLKのサンプリング立ち上がり or 立ち下がり
-    return spi1, spi2
+        self.id

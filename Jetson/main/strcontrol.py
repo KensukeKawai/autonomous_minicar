@@ -44,16 +44,3 @@ class PWM():
         else:
             self.str.ChangeDutyCycle(self.duty)
             self.status_rear = 1
-
-
-def PWM_set(p1_carrier,p2_carrier):
-    # PWM Parameter Set
-    output_pin1 = 32
-    output_pin2 = 33
-    # PWM GPIO Initialize
-    GPIO.setmode(GPIO.BOARD)
-    GPIO.setup(output_pin1, GPIO.OUT, initial=GPIO.HIGH)
-    p1 = GPIO.PWM(output_pin1, p1_carrier)
-    GPIO.setup(output_pin2, GPIO.OUT, initial=GPIO.HIGH)
-    p2 = GPIO.PWM(output_pin2, p2_carrier)
-    return p1, p2
