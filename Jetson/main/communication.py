@@ -4,7 +4,7 @@ import spidev
 
 # Parameter Set
 BAUDRATE = 115200
-SPI_SPEED = 1000000
+SPI_SPEED = 100000  # 基本、設定できる最低の100kHzにする。最大200kHzくらい
 
 def BytesToHex(Bytes):
     return ''.join(["0x%02X " % x for x in Bytes]).strip()
@@ -31,25 +31,39 @@ class UART():
 # SPI通信処理のclass
 class SPI():
     # コンストラクタでspidevのインスタンス生成
-    def __init__(self):
+    def __init__(self,chipselect):
         self.spi = spidev.SpiDev()            # インスタンス生成
-        self.spi.open(0, 0)                   # (基本0、チップセレクト0 or 1）
+        self.spi.open(0, chipselect)          # (基本0、チップセレクト0 or 1）
         self.spi.max_speed_hz = SPI_SPEED     # 通信周波数設定
         # SPIモードは1が一番ノイズ耐性高い
         # self.spi.mode = 1                     # デフォルト0のため書き込み不要。MOSIのシフト、SCLKのサンプリング立ち上がり or 立ち下がり 
-    
-    # def send_rec(self, nmtgtm1, nmtgtm2, id):
-    #     # ここにbit処理した上でSPI送受信処理
 
+    # bit処理してSPI送受信処理
+    def send(self, nmtgtm1, nmtgtm2, id):
+        #Const
+        BITMASK_MODE_NORMAL = 1<<28
+        BITMASK_MODE_MTORIGIN = 1<<29
+        BITMASK_MODE_STOP = 1<<30
+        BITMASK_ROTDIR = 1<<13
+        BITMASK_NMTGT = 0x1FFF
+        BITSHIFT_NM2 = 14
+        # モータ1処理
+        self.nmtgtm1 = nmtgtm1 | BITMASK_ROTDIR
+
+        # モータ2処理
+        self.nmtgtm2 = nmtgtm2 << BITSHIFT_NM2
+
+        # ID処理
+        self.id 
 
 def SPI_set(speed):
     # チップセレクトごとにspiインスタンス生成
-    spi0 = spidev.SpiDev()
     spi1 = spidev.SpiDev()
-    spi0.open(0, 0)                # (基本0、チップセレクト0 or 1）
-    spi0.max_speed_hz = speed      #通信周波数設定。最低100kHz。
-    spi1.open(0, 1)                # (基本0、チップセレクト0 or 1）
+    spi2 = spidev.SpiDev()
+    spi1.open(0, 0)                # (基本0、チップセレクト0 or 1）
     spi1.max_speed_hz = speed      #通信周波数設定。最低100kHz。
-    spi0.mode = 0               #デフォルト0のため書き込み不要。MOSIのシフト、SCLKのサンプリング立ち上がり or 立ち下がり
+    spi2.open(0, 1)                # (基本0、チップセレクト0 or 1）
+    spi2.max_speed_hz = speed      #通信周波数設定。最低100kHz。
     spi1.mode = 0               #デフォルト0のため書き込み不要。MOSIのシフト、SCLKのサンプリング立ち上がり or 立ち下がり
-    return spi0, spi1
+    spi2.mode = 0               #デフォルト0のため書き込み不要。MOSIのシフト、SCLKのサンプリング立ち上がり or 立ち下がり
+    return spi1, spi2
