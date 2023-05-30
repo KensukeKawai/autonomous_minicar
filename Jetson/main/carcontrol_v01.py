@@ -10,8 +10,6 @@ import communication as cm
 
 # Variable
 global nmtgtm1, nmtgtm2, tt
-# cnt_pwm_off = 0
-# flag_pwm_off = 1
 global now_time
 now_time = 0
 
@@ -19,7 +17,6 @@ now_time = 0
 ID_MODE_STOP = 0
 ID_MODE_NORMAL = 1
 ID_MODE_MTORIGIN = 2
-# CNT_PWM_OFF = 2
 PIN_SERVO_SUPPLY = 13       # サーボ電源のON/OFF用GPIO
 PIN_PWMOUT_FRONT = 32
 PIN_PWMOUT_REAR = 33
@@ -30,7 +27,7 @@ T_OFFSET = T_MAIN_TGT * 6
 T_MAIN = T_MAIN_TGT - T_OFFSET/1000
 
 # 汎用初期化処理
-GPIO.setwarnings(False)
+GPIO.setwarnings(False)             # PWMのインスタンス生成時にワーニング出るため消し去る
 GPIO.setmode(GPIO.BOARD)
 GPIO.setup(PIN_SERVO_SUPPLY, GPIO.OUT, initial=GPIO.LOW)
 
