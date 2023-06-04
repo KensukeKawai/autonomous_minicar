@@ -54,6 +54,7 @@ void main()
 
 	// 初回は必ずJetsonから原点学習要求が来るまで待機
 	recwait(ID_MODE_MTORIGIN);
+	vdg_rspicnt_sendset(ID_MODE_MTORIGIN);
 	vdg_mtcnt_mtorigin();									//原点学習処理
 	//メインループ初回でフリーホイール状態にしておくために全出力とカウント値をOFFに設定しておく
 	vdg_mtcnt_freewheelm1();
