@@ -21,7 +21,6 @@ BITSHIFT_NM2 = 14
 # BITMASK_B4 = 0xFF000000
 BITMASK_BYTE = 0xFF
 
-
 def BytesToHex(Bytes):
     return ''.join(["0x%02X " % x for x in Bytes]).strip()
 
