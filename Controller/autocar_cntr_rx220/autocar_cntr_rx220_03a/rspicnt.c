@@ -1,6 +1,7 @@
 
 #include "common.h"
-#include "mtcnt.h"
+// #include "mtcnt.h"
+
 
 /***************グローバル変数定義***************/
 volatile unsigned char u1g_rspicnt_idmoderq;
@@ -13,28 +14,29 @@ void vdg_rspicnt_recget()
 {
     /**********テンポラリ変数定義**********/
     volatile unsigned long u4t_rspicnt_spdrrec;
-    volatile unsigned long u4t_rspicnt_spdrrectmp;
-
+    volatile unsigned long u4t_rspicnt_spdrrecmd;
+    volatile unsigned long u4t_rspicnt_spdrrectmp2;
 
     u4t_rspicnt_spdrrec = RSPI0.SPDR.LONG;      //Long Wordで受信データ取得し処理
 
     /*****割りつけられたbitに対応する判断、データ処理*****/
     //制御モード要求取得
-    if(u4t_rspicnt_spdrrec & BITMASK_MODE_NORMAL)
+    u4t_rspicnt_spdrrecmd = u4t_rspicnt_spdrrec & BITMASK_MODE;
+    u4t_rspicnt_spdrrecmd = u4t_rspicnt_spdrrecmd >> BITSHIFT_MODE;
+    switch (u4t_rspicnt_spdrrecmd)
     {
-        u1g_rspicnt_idmoderq = ID_MODE_NORMAL;
-    }
-    else if(u4t_rspicnt_spdrrec & BITMASK_MODE_MTORIGIN)
-    {
-        u1g_rspicnt_idmoderq = ID_MODE_MTORIGIN;
-    }
-    else if(u4t_rspicnt_spdrrec & BITMASK_MODE_STOP)
-    {
-        u1g_rspicnt_idmoderq = ID_MODE_STOP;
-    }
-    else//全て要求がなかった場合は停車とする
-    {
-        u1g_rspicnt_idmoderq = ID_MODE_STOP;
+        case ID_MODE_STP:
+            u1g_rspicnt_idmoderq = ID_MODE_STP;
+        break;
+        case ID_MODE_RUN:
+            u1g_rspicnt_idmoderq = ID_MODE_RUN;
+        break;    
+        case ID_MODE_ORG:
+            u1g_rspicnt_idmoderq = ID_MODE_ORG;
+        break;
+        default://全て要求がなかった場合は停車とする
+            u1g_rspicnt_idmoderq = ID_MODE_STP;
+        break;
     }
 
     //目標回転数取得
@@ -49,14 +51,14 @@ void vdg_rspicnt_recget()
     }
     //Motor2
     //Motor2目標回転数をLSBスタートにするためにビットシフト
-    u4t_rspicnt_spdrrectmp = u4t_rspicnt_spdrrec>>14;
-    if(u4t_rspicnt_spdrrectmp & BITMASK_ROTDIR)
+    u4t_rspicnt_spdrrectmp2 = u4t_rspicnt_spdrrec>>14;
+    if(u4t_rspicnt_spdrrectmp2 & BITMASK_ROTDIR)
     {
-        s4g_rspicnt_nm2tgt = -1 * (signed long)(u4t_rspicnt_spdrrectmp & BITMASK_NMTGT);
+        s4g_rspicnt_nm2tgt = -1 * (signed long)(u4t_rspicnt_spdrrectmp2 & BITMASK_NMTGT);
     }
     else
     {
-        s4g_rspicnt_nm2tgt = (signed long)(u4t_rspicnt_spdrrectmp & BITMASK_NMTGT);
+        s4g_rspicnt_nm2tgt = (signed long)(u4t_rspicnt_spdrrectmp2 & BITMASK_NMTGT);
     }
 
     // RSPI0.SPDR.LONG = u4t_rspicnt_spdrrec;  // Tmp
@@ -71,7 +73,7 @@ void vdg_rspicnt_sendset(unsigned char mode)
     //モータコントローラ内のモータ制御状態に応じてJetsonに状態と回転数を通知
     switch(mode)
     {
-        case ID_MODE_NORMAL:
+        case ID_MODE_RUN:
             //実モータ回転数の符号判定処理
             if(s4g_mtcnt_nmsm1 >= 0)
             {
@@ -92,23 +94,22 @@ void vdg_rspicnt_sendset(unsigned char mode)
                 u4t_rspicnt_nmsm2 = u4t_rspicnt_nmsm2 | BITMASK_ROTDIR;
             }
             u4t_rspicnt_spdrset = u4t_rspicnt_nmsm1 | (u4t_rspicnt_nmsm2<<BITSHIFT_NM2);
-            u4t_rspicnt_spdrset = u4t_rspicnt_spdrset | BITMASK_MODE_NORMAL;
+            u4t_rspicnt_spdrset = u4t_rspicnt_spdrset | BITMASK_MODE_RUN;
         break;
 
-        case ID_MODE_MTORIGIN:
+        case ID_MODE_ORG:
             u4t_rspicnt_spdrset = 0;
-            u4t_rspicnt_spdrset = u4t_rspicnt_spdrset | BITMASK_MODE_MTORIGIN;
+            u4t_rspicnt_spdrset = u4t_rspicnt_spdrset | BITMASK_MODE_ORG;
         break;
         
-        case ID_MODE_STOP:
+        case ID_MODE_STP:
             u4t_rspicnt_spdrset = 0;
-            u4t_rspicnt_spdrset = u4t_rspicnt_spdrset | BITMASK_MODE_STOP;
+        break;
+
+        case ID_MODE_RUNTOSTP:
+            u4t_rspicnt_spdrset = BITMASK_MODE_RUNTOSTP;
         break;
     }
-
-    // if( u1g_mtcnt_xnormal == 1){u4t_rspicnt_spdrset = u4t_rspicnt_spdrset | BITMASK_MODE_NORMAL;}
-    // else if(u1g_mtcnt_xmtorigin == 1){u4t_rspicnt_spdrset = u4t_rspicnt_spdrset | BITMASK_MODE_MTORIGIN;}
-    // else if(u1g_mtcnt_xstop == 1){u4t_rspicnt_spdrset = u4t_rspicnt_spdrset | BITMASK_MODE_STOP;}
 
     RSPI0.SPDR.LONG = u4t_rspicnt_spdrset;
 }

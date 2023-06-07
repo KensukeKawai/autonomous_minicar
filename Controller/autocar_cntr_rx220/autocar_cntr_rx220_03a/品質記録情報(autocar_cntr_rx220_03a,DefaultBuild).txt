@@ -1,15 +1,16 @@
 品質記録情報
-2023年5月31日 2:52:18
+2023年6月8日 2:44:26
 
 ------ ビルド開始(autocar_cntr_rx220_03a, DefaultBuild) ------
 C:\Program Files (x86)\Renesas Electronics\CS+\CC\CC-RX\V3.05.00\Bin\lbgrx.exe -isa=rxv1 -nofpu -head=runtime,mathf,stdio,stdlib,string,new -output=DefaultBuild\autocar_cntr_rx220_03a.lib -nologo
 Library Generator Completed
 C:\Program Files (x86)\Renesas Electronics\CS+\CC\CC-RX\V3.05.00\Bin\ccrx.exe dbsct.c intprg.c resetprg.c sbrk.c vecttbl.c hwsetup.c api_init.c excep.c autocar_cntr_rx220_03a.c current.c mtcnt.c scicnt.c mtsensor.c rspicnt.c -isa=rxv1 -nofpu -lang=c -include=. -output=obj -obj_path=DefaultBuild -debug -g_line -nologo
+autocar_cntr_rx220_03a.c(143):W0520069:Integer conversion resulted in truncation
 C:\Program Files (x86)\Renesas Electronics\CS+\CC\CC-RX\V3.05.00\Bin\rlink.exe -subcommand=DefaultBuild\autocar_cntr_rx220_03a.clnk
-W0561016:The evaluation version of CC-RX V3 is valid for the remaining 57 days. After that, link size limit (128 Kbyte) will be applied. Please consider purchasing the product.
-W0561016:The evaluation version of CC-RX V3 is valid for the remaining 57 days. After that, link size limit (128 Kbyte) will be applied. Please consider purchasing the product.
+W0561016:The evaluation version of CC-RX V3 is valid for the remaining 49 days. After that, link size limit (128 Kbyte) will be applied. Please consider purchasing the product.
+W0561016:The evaluation version of CC-RX V3 is valid for the remaining 49 days. After that, link size limit (128 Kbyte) will be applied. Please consider purchasing the product.
 Renesas Optimizing Linker Completed
------- ビルド終了(エラー:0個, 警告:2個)(autocar_cntr_rx220_03a, DefaultBuild) ------
+------ ビルド終了(エラー:0個, 警告:3個)(autocar_cntr_rx220_03a, DefaultBuild) ------
 
 --- CommandFile 1 ---
 DefaultBuild\autocar_cntr_rx220_03a.clnk :
@@ -43,8 +44,8 @@ DefaultBuild\autocar_cntr_rx220_03a.clnk :
 
 
 --- SHA1 hash value of output files ---
-D:\00_develop\gitrepository\autonomous_minicar\Controller\autocar_cntr_rx220\autocar_cntr_rx220_03a\DefaultBuild\autocar_cntr_rx220_03a.abs: 2b8b3f284d67e226887515e280fd512040934470
-D:\00_develop\gitrepository\autonomous_minicar\Controller\autocar_cntr_rx220\autocar_cntr_rx220_03a\DefaultBuild\autocar_cntr_rx220_03a.mot: 69eee486414b5f47e257bdc610781d3439a77eca
+D:\00_develop\gitrepository\autonomous_minicar\Controller\autocar_cntr_rx220\autocar_cntr_rx220_03a\DefaultBuild\autocar_cntr_rx220_03a.abs: 31b74bcacb07685b0fe3fcfbfe7be8ea96ba4f48
+D:\00_develop\gitrepository\autonomous_minicar\Controller\autocar_cntr_rx220\autocar_cntr_rx220_03a\DefaultBuild\autocar_cntr_rx220_03a.mot: 389ccb21c54230aa709d537e48b11d2ced61e573
 
 
 --- システム情報 ---
@@ -70,7 +71,7 @@ D:\00_develop\gitrepository\autonomous_minicar\Controller\autocar_cntr_rx220\aut
  C:\Program Files (x86)\Renesas Electronics\CS+\CC
 *メモリ使用量
  *プライベート・ワーキング・セット
-  96 MB
+  100 MB
  *GDIオブジェクト数
   509
  *USERオブジェクト数

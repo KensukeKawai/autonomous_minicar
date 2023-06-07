@@ -53,16 +53,16 @@ void main()
 	vdg_mtcnt_outset(ID_MOTOR2, ID_ALLOFF, CNT_OUTOFF);		//モータ2の出力全OFF、カウントOFF
 
 	// 初回は必ずJetsonから原点学習要求が来るまで待機
-	recwait(ID_MODE_MTORIGIN);
-	vdg_rspicnt_sendset(ID_MODE_MTORIGIN);
-	vdg_mtcnt_mtorigin();									//原点学習処理
-	//メインループ初回でフリーホイール状態にしておくために全出力とカウント値をOFFに設定しておく
+	recwait(ID_MODE_ORG);
+	vdg_rspicnt_sendset(ID_MODE_ORG);
+	vdg_mtcnt_mtorigin();									//原点学習処理(中でSTP処理入れてる)
+		//メインループ初回でフリーホイール状態にしておくために全出力とカウント値をOFFに設定しておく
 	vdg_mtcnt_freewheelm1();
 	vdg_mtcnt_freewheelm2();
 
-	//Jetsonから通常モード指令が来るまで待機⇒原点学習完了時点で初回はJteson側でノーマルモードに自動遷移で良いかも
-	recwait(ID_MODE_NORMAL);
-	vdg_rspicnt_sendset(ID_MODE_NORMAL);
+	//Jetsonから通常モード指令が来るまで待機
+	recwait(ID_MODE_RUN);
+	vdg_rspicnt_sendset(ID_MODE_RUN);
 
 	/********** メインループ処理 **********/
 	while(1)
@@ -84,8 +84,6 @@ void main()
 		vdg_mtcnt_stagephasejdg();					//進行方向と現在電気角からステージ設定(stagejdg)
 		/*****idstagem12の算出*****/
 
-							// u1g_mtcnt_idorthantm1=ID_MTRUN_FWDPWR;
-
 		/*****電流センサ処理*****/
 		while(u1g_exs12adi0_xadcex != 1);			//ADC終了待ち
 		u1g_exs12adi0_xadcex = 0;
@@ -102,9 +100,9 @@ void main()
 		/*****要求モードに合わせて処理選択*****/
 		switch(u1g_rspicnt_idmoderq)
 		{
-			case ID_MODE_NORMAL:					//通常運転モード
+			case ID_MODE_RUN:					//通常運転モード
 				/*****Motor1*****/
-				u1g_mtcnt_idmode = ID_MODE_NORMAL;
+				u1g_mtcnt_idmode = ID_MODE_RUN;
 				if ((u1g_mtcnt_idorthantm1==ID_MTRUN_FWDPWR) || (u1g_mtcnt_idorthantm1==ID_MTRUN_REVPWR))
 				{
 					vdg_mtcnt_tgrpwrcalm1();			//力行時Duty算出
@@ -125,19 +123,29 @@ void main()
 				}
 			break;
 
-			case ID_MODE_MTORIGIN:			//原点学習モード
-				u1g_mtcnt_idmode = ID_MODE_MTORIGIN;
-				//走行中か否かで先に停車処理させるか否か決める
-				//もし停車状態で原点学習できる状態なら実施
-				vdg_mtcnt_mtorigin();
+			case ID_MODE_ORG:			//原点学習モード
+				if (u1g_mtcnt_idmode == ID_MODE_STP)
+				{
+					u1g_mtcnt_idmode = ID_MODE_ORG;
+					//走行中か否かで先に停車処理させるか否か決める
+					//もし停車状態で原点学習できる状態なら実施
+					vdg_mtcnt_mtorigin();
+				}
+				// 停車中でない場合はMODEは前回値保持とする
 			break;
 
-			case ID_MODE_STOP:						//車両停車モード
-				u1g_mtcnt_idmode = ID_MODE_STOP;
-				//まだ走行中の場合は何か特殊処理する・・・？
-				// 次周期の変数をOFF状態にしておく
+			case ID_MODE_STP:						//車両停車モード
 				vdg_mtcnt_freewheelm1();
 				vdg_mtcnt_freewheelm2();
+				// もしまだモータが回っていたら停止処理中IDにする
+				if (abs(s4g_mtcnt_nmsm1) > 5 | abs(s4g_mtcnt_nmsm2) > 5)
+				{
+					u1g_mtcnt_idmode = BITMASK_MODE_RUNTOSTP;
+				}
+				else
+				{
+					u1g_mtcnt_idmode = ID_MODE_STP;
+				}
 			break;
 		}
 		/*****要求モードに合わせて処理選択*****/

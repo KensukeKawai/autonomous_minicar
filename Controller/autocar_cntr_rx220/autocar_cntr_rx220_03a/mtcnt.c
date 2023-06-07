@@ -703,7 +703,7 @@ void vdg_mtcnt_mtorigin()
 
 	// Jetsonに原点学習中であることを通知
 	// u1g_mtcnt_idmode = ID_MODE_MTORIGIN;
-	vdg_rspicnt_sendset(ID_MODE_MTORIGIN);
+	vdg_rspicnt_sendset(ID_MODE_ORG);
 
 	// vdg_rspicnt_sendset(u1g_mtcnt_idmode);
 	// u4t_mtcnt_spdrset = BITMASK_MODE_MTORIGIN;
@@ -742,6 +742,6 @@ void vdg_mtcnt_mtorigin()
 
 
 	// JetsonにSTOPを通知し原点学習が完了した状態を知らせる
-	u1g_mtcnt_idmode = ID_MODE_STOP;
-	vdg_rspicnt_sendset(ID_MODE_STOP);
+	u1g_mtcnt_idmode = ID_MODE_STP;
+	vdg_rspicnt_sendset(ID_MODE_STP);
 }
