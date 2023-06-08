@@ -23,42 +23,48 @@ void vdg_rspicnt_recget()
     //制御モード要求取得
     u4t_rspicnt_spdrrecmd = u4t_rspicnt_spdrrec & BITMASK_MODE;
     u4t_rspicnt_spdrrecmd = u4t_rspicnt_spdrrecmd >> BITSHIFT_MODE;
+
     switch (u4t_rspicnt_spdrrecmd)
     {
         case ID_MODE_STP:
             u1g_rspicnt_idmoderq = ID_MODE_STP;
+            s4g_rspicnt_nm1tgt = 0;
+            s4g_rspicnt_nm2tgt = 0;
         break;
+
         case ID_MODE_RUN:
             u1g_rspicnt_idmoderq = ID_MODE_RUN;
-        break;    
+            //Motor1
+            if(u4t_rspicnt_spdrrec & BITMASK_ROTDIR)
+            {
+                s4g_rspicnt_nm1tgt = -1 * (signed long)(u4t_rspicnt_spdrrec & BITMASK_NMTGT);
+            }
+            else
+            {
+                s4g_rspicnt_nm1tgt = (signed long)(u4t_rspicnt_spdrrec & BITMASK_NMTGT);
+            }
+            //Motor2
+            //Motor2目標回転数をLSBスタートにするためにビットシフト
+            u4t_rspicnt_spdrrectmp2 = u4t_rspicnt_spdrrec>>14;
+            if(u4t_rspicnt_spdrrectmp2 & BITMASK_ROTDIR)
+            {
+                s4g_rspicnt_nm2tgt = -1 * (signed long)(u4t_rspicnt_spdrrectmp2 & BITMASK_NMTGT);
+            }
+            else
+            {
+                s4g_rspicnt_nm2tgt = (signed long)(u4t_rspicnt_spdrrectmp2 & BITMASK_NMTGT);
+            }
+        break;   
+
         case ID_MODE_ORG:
             u1g_rspicnt_idmoderq = ID_MODE_ORG;
+            s4g_rspicnt_nm1tgt = 0;
+            s4g_rspicnt_nm2tgt = 0;
         break;
+
         default://全て要求がなかった場合は停車とする
             u1g_rspicnt_idmoderq = ID_MODE_STP;
         break;
-    }
-
-    //目標回転数取得
-    //Motor1
-    if(u4t_rspicnt_spdrrec & BITMASK_ROTDIR)
-    {
-        s4g_rspicnt_nm1tgt = -1 * (signed long)(u4t_rspicnt_spdrrec & BITMASK_NMTGT);
-    }
-    else
-    {
-        s4g_rspicnt_nm1tgt = (signed long)(u4t_rspicnt_spdrrec & BITMASK_NMTGT);
-    }
-    //Motor2
-    //Motor2目標回転数をLSBスタートにするためにビットシフト
-    u4t_rspicnt_spdrrectmp2 = u4t_rspicnt_spdrrec>>14;
-    if(u4t_rspicnt_spdrrectmp2 & BITMASK_ROTDIR)
-    {
-        s4g_rspicnt_nm2tgt = -1 * (signed long)(u4t_rspicnt_spdrrectmp2 & BITMASK_NMTGT);
-    }
-    else
-    {
-        s4g_rspicnt_nm2tgt = (signed long)(u4t_rspicnt_spdrrectmp2 & BITMASK_NMTGT);
     }
 
     // RSPI0.SPDR.LONG = u4t_rspicnt_spdrrec;  // Tmp

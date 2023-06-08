@@ -7,19 +7,15 @@ import globalval as g
 BAUDRATE = 115200
 SPI_SPEED = 100000  # 基本、設定できる最低の100kHzにする。最大200kHzくらい
 
-BITMASK_MODE_NORMAL = 1<<28
-BITMASK_MODE_MTORIGIN = 1<<29
-BITMASK_MODE_STOP = 1<<30
+BITMASK_MODE_RUN = 1<<28
+BITMASK_MODE_ORG = 2<<28
+BITMASK_MODE_RUNTOSTP = 3<<28
 BITMASK_ROTDIR = 1<<13
 BITMASK_NMTGT = 0x1FFF
+BITMASK_MODE = 0xF0000000
+BITMASK_BYTE = 0xFF                 # xfer2でSPI送信する際のバイト分割
 BITSHIFT_NM2 = 14
-
-# xfer2でSPI送信する際のバイト分割
-# BITMASK_B1 = 0x000000FF
-# BITMASK_B2 = 0x0000FF00
-# BITMASK_B3 = 0x00FF0000
-# BITMASK_B4 = 0xFF000000
-BITMASK_BYTE = 0xFF
+BITSHIFT_MODE = 28
 
 def BytesToHex(Bytes):
     return ''.join(["0x%02X " % x for x in Bytes]).strip()
@@ -73,25 +69,27 @@ class SPI():
 
         # ID設定
         if id == g.ID_MODE_NORMAL:
-            self.senddata = self.nmtgtm1 | BITMASK_MODE_NORMAL
+            self.senddata = self.nmtgt | BITMASK_MODE_RUN
         elif id == g.ID_MODE_MTORIGIN:
-            self.senddata = self.nmtgtm1 | BITMASK_MODE_MTORIGIN
+            self.senddata = self.nmtgt | BITMASK_MODE_ORG
         elif id == g.ID_MODE_STOP:
-            self.senddata = self.nmtgtm1 | BITMASK_MODE_STOP
+            # self.senddata = self.nmtgt | BITMASK_MODE_STP
+            self.senddata = self.nmtgt
         
         # 送信データビット処理して送信
-        self.send_b1 = self.senddata & BITMASK_BYTE
-        self.send_b2 = (self.senddata>>8) & BITMASK_BYTE
-        self.send_b3 = (self.senddata>>16) & BITMASK_BYTE
-        self.send_b4 = (self.senddata>>24) & BITMASK_BYTE
-        self.rec_data = self.spi.xfer2([self.b4,self.b3,self.b2,self.b1])    # MSB First
+        self.send_B1 = self.senddata & BITMASK_BYTE
+        self.send_B2 = (self.senddata>>8) & BITMASK_BYTE
+        self.send_B3 = (self.senddata>>16) & BITMASK_BYTE
+        self.send_B4 = (self.senddata>>24) & BITMASK_BYTE
+        self.rec_data = self.spi.xfer2([self.B4,self.B3,self.B2,self.B1])    # MSB First
 
         # 受信データ処理
-        if (self.rec_data & BITMASK_MODE_NORMAL) == 1:
+
+        if (self.rec_data & BITMASK_MODE_RUN) == 1:
             self.rec_id = g.ID_MODE_NORMAL
-        elif (self.rec_data & BITMASK_MODE_MTORIGIN) == 1:
+        elif (self.rec_data & BITMASK_MODE_ORG) == 1:
             self.rec_id = g.ID_MODE_MTORIGIN
-        elif (self.rec_data & BITMASK_MODE_STOP) == 1:
+        elif (self.rec_data & BITMASK_MODE_STP) == 1:
             self.rec_id = g.ID_MODE_STOP
 
         if (self.rec_data & BITMASK_ROTDIR) == 0:

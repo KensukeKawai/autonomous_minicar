@@ -123,6 +123,9 @@ def esp32rec():
     
     g.rec_f_id, g.rec_f_nml, g.rec_f_nmr = spi_front.sendrec(g.nmtgtl,g.nmtgtr,id_set)
 
+
+
+
 def main_func():
     global now_time
     old_time = now_time
