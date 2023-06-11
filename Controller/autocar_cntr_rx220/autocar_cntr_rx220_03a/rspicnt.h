@@ -2,27 +2,27 @@
 #ifndef _RSPICNT_H_
 #define _RSPICNT_H_
 
-/***************é–¢æ•°extern**************/
+/***************ŠÖ”extern**************/
 extern void vdg_rspicnt_recget();
 
-/***************ã‚°ãƒ­ãƒ¼ãƒãƒ«å¤‰æ•°extern**************/
+/***************ƒOƒ[ƒoƒ‹•Ï”extern**************/
 extern volatile unsigned char u1g_rspicnt_idmoderq;
 extern volatile signed long s4g_rspicnt_nm1tgt;
 extern volatile signed long s4g_rspicnt_nm2tgt;
 
-/***************ãƒã‚¯ãƒ­å®šç¾©***************/
-#define ID_MODE_STP 0                                            //åœè»Š
-#define ID_MODE_RUN 1                                            //é€šå¸¸èµ°è¡Œ
-#define ID_MODE_ORG 2                                            //åŸç‚¹å­¦ç¿’
-#define ID_MODE_RUNTOSTP 3                                       //é€šå¸¸èµ°è¡Œâ†’åœè»Šé·ç§»ä¸­
+/***************ƒ}ƒNƒ’è‹`***************/
+#define ID_MODE_STP 1                                            //’âÔ
+#define ID_MODE_RUN 2                                            //’Êí‘–s
+#define ID_MODE_ORG 3                                            //Œ´“_ŠwK
+#define ID_MODE_RUNTOSTP 4                                       //’Êí‘–s¨’âÔ‘JˆÚ’†
 
-#define BITMASK_MODE ((unsigned long)(0xF0000000))               //MSBã‹ã‚‰4bitåˆ†çŠ¶æ…‹åˆ¤å®šç”¨ãƒã‚¹ã‚¯
-#define BITMASK_MODE_RUN ((unsigned long)(1<<28))                //é€šå¸¸èµ°è¡Œãƒ¢ãƒ¼ãƒ‰è¦æ±‚"1"ãƒã‚¹ã‚¯ç”¨
-#define BITMASK_MODE_ORG ((unsigned long)(2<<28))                //åŸç‚¹å­¦ç¿’è¦æ±‚"2"ãƒã‚¹ã‚¯ç”¨
-#define BITMASK_MODE_RUNTOSTP ((unsigned long)(3<<28))           //èµ°è¡Œä¸­â†’åœè»Šé·ç§»ä¸­"3"ãƒã‚¹ã‚¯ç”¨
-#define BITMASK_ROTDIR ((unsigned long)(1<<13))                  //Motorã®å›è»¢æ–¹æ³•åˆ¤å®šç”¨ãƒ“ãƒƒãƒˆãƒã‚¹ã‚¯
-#define BITMASK_NMTGT ((unsigned long)(0x1FFF))                  //ãƒ¢ãƒ¼ã‚¿ç›®æ¨™å›è»¢æ•°ç”¨ãƒ“ãƒƒãƒˆãƒã‚¹ã‚¯ã€‚13bit
-#define BITSHIFT_MODE ((unsigned long)(28))                      //çŠ¶æ…‹åˆ¤å®šç”¨ä¸Šä½4bitç”¨ãƒ“ãƒƒãƒˆã‚·ãƒ•ãƒˆå›æ•°
-#define BITSHIFT_NM2 ((unsigned long)(14))                       //Motor2å›è»¢æ•°ç”¨ãƒ“ãƒƒãƒˆã‚·ãƒ•ãƒˆå›æ•°
+#define BITMASK_MODE ((unsigned long)(0xF0000000))               //MSB‚©‚ç4bit•ªó‘Ô”»’è—pƒ}ƒXƒN
+#define BITMASK_MODE_RUN ((unsigned long)(1<<28))                //’Êí‘–sƒ‚[ƒh—v‹"1"ƒ}ƒXƒN—p
+#define BITMASK_MODE_ORG ((unsigned long)(2<<28))                //Œ´“_ŠwK—v‹"2"ƒ}ƒXƒN—p
+#define BITMASK_MODE_RUNTOSTP ((unsigned long)(3<<28))           //‘–s’†¨’âÔ‘JˆÚ’†"3"ƒ}ƒXƒN—p
+#define BITMASK_ROTDIR ((unsigned long)(1<<13))                  //Motor‚Ì‰ñ“]•û–@”»’è—pƒrƒbƒgƒ}ƒXƒN
+#define BITMASK_NMTGT ((unsigned long)(0x1FFF))                  //ƒ‚[ƒ^–Ú•W‰ñ“]”—pƒrƒbƒgƒ}ƒXƒNB13bit
+#define BITSHIFT_MODE ((unsigned long)(28))                      //ó‘Ô”»’è—pãˆÊ4bit—pƒrƒbƒgƒVƒtƒg‰ñ”
+#define BITSHIFT_NM2 ((unsigned long)(14))                       //Motor2‰ñ“]”—pƒrƒbƒgƒVƒtƒg‰ñ”
 
 #endif

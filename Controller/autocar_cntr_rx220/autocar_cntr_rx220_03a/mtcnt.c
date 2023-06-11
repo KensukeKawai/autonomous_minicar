@@ -743,5 +743,7 @@ void vdg_mtcnt_mtorigin()
 
 	// JetsonにSTOPを通知し原点学習が完了した状態を知らせる
 	u1g_mtcnt_idmode = ID_MODE_STP;
+	// 原点学習終了後は次周期で意図せぬ学習開始しないようにrq自体をSTPに遷移させておく
+	u1g_rspicnt_idmoderq = ID_MODE_STP;
 	vdg_rspicnt_sendset(ID_MODE_STP);
 }

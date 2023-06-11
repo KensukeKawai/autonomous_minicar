@@ -197,9 +197,9 @@ volatile unsigned char u1g_event_xtriangle;
 volatile unsigned char u1g_event_idmode;
 
 /*****マクロ定義*****/
-#define ID_STOP 0
-#define ID_NORMAL 1
-#define ID_MTORIGIN 2
+#define ID_STOP 1
+#define ID_NORMAL 2
+#define ID_MTORIGIN 3
 
 
 
