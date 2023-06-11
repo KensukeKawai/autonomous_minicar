@@ -103,7 +103,7 @@ class SPI():
         else:
             self.rec_nm2 = -1 * (self.nm2pre & BITMASK_NMTGT)
 
-        return self.rec_id, self.rec_nm1, self.rec_nm2
+        return self.rec_nm1, self.rec_nm2
     
     def rec_only_id(self):
         # Jetson受信のみの場合はIDをFFにしてマイコン側に通達
