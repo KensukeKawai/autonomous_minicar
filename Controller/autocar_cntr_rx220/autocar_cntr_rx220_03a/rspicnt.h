@@ -15,6 +15,7 @@ extern volatile signed long s4g_rspicnt_nm2tgt;
 #define ID_MODE_RUN 2                                            //通常走行
 #define ID_MODE_ORG 3                                            //原点学習
 #define ID_MODE_RUNTOSTP 4                                       //通常走行→停車遷移中
+#define ID_MODE_RECONLY 15                                       //Jetsonに状態のみ送信するモード
 
 #define BITMASK_MODE ((unsigned long)(0xF0000000))               //MSBから4bit分状態判定用マスク
 #define BITMASK_MODE_RUN ((unsigned long)(1<<28))                //通常走行モード要求"1"マスク用

@@ -21,8 +21,8 @@ void vdg_rspicnt_recget()
 
     /*****割りつけられたbitに対応する判断、データ処理*****/
     //制御モード要求取得
-    u4t_rspicnt_spdrrecmd = u4t_rspicnt_spdrrec & BITMASK_MODE;
-    u4t_rspicnt_spdrrecmd = u4t_rspicnt_spdrrecmd >> BITSHIFT_MODE;
+    // u4t_rspicnt_spdrrecmd = u4t_rspicnt_spdrrec & BITMASK_MODE;
+    u4t_rspicnt_spdrrecmd = u4t_rspicnt_spdrrec >> BITSHIFT_MODE;
 
     switch (u4t_rspicnt_spdrrecmd)
     {
@@ -60,6 +60,10 @@ void vdg_rspicnt_recget()
             u1g_rspicnt_idmoderq = ID_MODE_ORG;
             s4g_rspicnt_nm1tgt = 0;
             s4g_rspicnt_nm2tgt = 0;
+        break;
+
+        case ID_MODE_RECONLY:
+            //Jetsonへの状態送信のみの場合は状態更新、Nmビット処理不要
         break;
 
         default://全て要求がなかった場合は停車とする
