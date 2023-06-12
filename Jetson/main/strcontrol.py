@@ -25,9 +25,10 @@ class STRCNT():
 
     # メソッド
     def FrontOut(self,rx_norm):
-        self.duty= rx_norm * DDUTY_FR + DUTY_MID_FR
+        self.duty = rx_norm * DDUTY_FR + DUTY_MID_FR
         if self.status_front == 0:
             self.str.start(self.duty)
+            self.status_front = 1
         else:
             self.str.ChangeDutyCycle(self.duty)
             self.status_front = 1
@@ -36,16 +37,7 @@ class STRCNT():
         self.duty = -1 * rx_norm * DDUTY_RR + DUTY_MID_FR
         if self.status_rear == 0:
             self.str.start(self.duty)
+            self.status_rear = 1
         else:
             self.str.ChangeDutyCycle(self.duty)
             self.status_rear = 1
-
-def strstop(self):
-    self.str_front.FrontOut(127)
-    self.str_rear.RearOut(127)
-    GPIO.output(g.PIN_SERVO_SUPPLY, GPIO.LOW)
-
-def strset(self, rx_norm):
-    self.str_front.FrontOut(rx_norm)
-    self.str_rear.RearOut(rx_norm)
-    GPIO.output(g.PIN_SERVO_SUPPLY, GPIO.HIGH)

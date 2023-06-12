@@ -190,18 +190,16 @@
 //
 //}
 
-/*****Global変数定義*****/
-volatile unsigned char u1g_event_xcircle;
-volatile unsigned char u1g_event_xcross;
-volatile unsigned char u1g_event_xtriangle;
-volatile unsigned char u1g_event_idmode;
-
 /*****マクロ定義*****/
 #define ID_STOP 1
 #define ID_NORMAL 2
 #define ID_MTORIGIN 3
 
-
+/*****Global変数定義*****/
+volatile unsigned char u1g_event_xcircle;
+volatile unsigned char u1g_event_xcross;
+volatile unsigned char u1g_event_xtriangle;
+volatile unsigned char u1g_event_idmode = ID_STOP;
 
 void autocar_cntget()
 {

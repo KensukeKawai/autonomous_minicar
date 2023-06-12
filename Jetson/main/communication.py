@@ -9,9 +9,10 @@ SPI_SPEED = 100000                  # 基本、設定できる最低の100kHzに
 SPI_CL_FRONT = 0                    # SPIインスタンス生成時のチップセレクト。フロント側。
 SPI_CL_REAR = 1
 
-BITMASK_MODE_RUN = 1<<28
-BITMASK_MODE_ORG = 2<<28
-BITMASK_MODE_RUNTOSTP = 3<<28
+BITMASK_MODE_STP =12<<28
+BITMASK_MODE_RUN = 2<<28
+BITMASK_MODE_ORG = 3<<28
+BITMASK_MODE_RUNTOSTP = 34<28
 BITMASK_ROTDIR = 1<<13
 BITMASK_NMTGT = 0x1FFF
 BITMASK_MODE = 0xF0000000
@@ -29,7 +30,6 @@ class UART():
         self.uart = serial.Serial('/dev/ttyUSB0', BAUDRATE)
     
     def read(self):
-        global esp32rec_id_z
         self.esp32rec_ly = int(BytesToHex(self.uart.read()),16)
         self.esp32rec_rx = int(BytesToHex(self.uart.read()),16)
         self.esp32rec_id = int(BytesToHex(self.uart.read()),16)
@@ -77,20 +77,26 @@ class SPI():
         elif id == g.ID_MODE_ORG:
             self.senddata = self.nmtgt | BITMASK_MODE_ORG
         elif id == g.ID_MODE_STP:
-            # self.senddata = self.nmtgt | BITMASK_MODE_STP
-            self.senddata = self.nmtgt
+            self.senddata = self.nmtgt | BITMASK_MODE_STP
+            # self.senddata = self.nmtgt
+        else:
+            self.senddata = 0
         
         # 送信データビット処理して送信
         self.send_B1 = self.senddata & BITMASK_BYTE
         self.send_B2 = (self.senddata>>8) & BITMASK_BYTE
         self.send_B3 = (self.senddata>>16) & BITMASK_BYTE
         self.send_B4 = (self.senddata>>24) & BITMASK_BYTE
-        self.rec_data = self.spi.xfer2([self.B4,self.B3,self.B2,self.B1])    # MSB First
+        self.rec_datalist = self.spi.xfer2([self.send_B4,self.send_B3,self.send_B2,self.send_B1])    # MSB First
+
+        # xfer2で受信したデータはlist型のため、bitシフトして32bitのデータに変換する
+        self.rec_data = self.rec_datalist[0] | (self.rec_datalist[1]<<8) | (self.rec_datalist[2]<<16) | (self.rec_datalist[3]<<24)
 
         # 受信データ処理
-        self.rec_id = self.rec_data >> BITSHIFT_MODE
+        # self.rec_mode = self.rec_data >> BITSHIFT_MODE
+        self.rec_mode = self.rec_datalist[3] >> 4
         if self.rec_mode > g.ID_MODE_MAX:
-            self.rec_id = g.ID_MODE_STP
+            self.rec_mode = g.ID_MODE_STP
 
         if (self.rec_data & BITMASK_ROTDIR) == 0:
             self.rec_nm1 = self.rec_data & BITMASK_NMTGT
@@ -108,9 +114,11 @@ class SPI():
     def rec_only_id(self):
         # Jetson受信のみの場合はIDをFFにしてマイコン側に通達
         self.rec_data = self.spi.xfer2([0xF0,0x00,0x00,0x00])    # MSB First
-        self.rec_id = self.rec_data >> BITSHIFT_MODE
+        # print("{} {} {} {}".format(self.rec_data[0],self.rec_data[1],self.rec_data[2],self.rec_data[3]))
 
+        self.rec_mode = self.rec_data[3] >> 4
         if self.rec_mode > g.ID_MODE_MAX:
-            self.rec_id = g.ID_MODE_STP
+            self.rec_mode = g.ID_MODE_STP
         
-        return self.rec_id
+        return self.rec_mode
+        # return self.rec_data[3]

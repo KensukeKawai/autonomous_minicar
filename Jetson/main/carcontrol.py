@@ -34,53 +34,74 @@ str_front = str.STRCNT(g.PIN_PWMOUT_FRONT)
 str_rear = str.STRCNT(g.PIN_PWMOUT_REAR)
 nmtgt = nmt.NMTGT()
 
+
+def strstop():
+    str_front.FrontOut(0)
+    str_rear.RearOut(0)
+    GPIO.output(g.PIN_SERVO_SUPPLY, GPIO.LOW)
+
+def strset(rx_norm):
+    str_front.FrontOut(rx_norm)
+    str_rear.RearOut(rx_norm)
+    GPIO.output(g.PIN_SERVO_SUPPLY, GPIO.HIGH)
+
 def cont_actuator():
     stick_ly,stick_rx,id_handcon = uart.read()   # Get Controller Value
 
     # ID受信
-    id_fmot = spi_front.rec_only_id()
-    id_rmot = spi_rear.rec_only_id()
+    g.id_fmot = spi_front.rec_only_id()
+    g.id_rmot = spi_rear.rec_only_id()
 
     # コントローラとID状態から指定ID判断
-    if id_fmot == g.ID_MODE_STP:
-        id_fmotreq = id_handcon
-    elif id_fmot == g.ID_MODE_RUN:
+    if g.id_fmot == g.ID_MODE_STP:
+        g.id_fmotreq = id_handcon
+    elif g.id_fmot == g.ID_MODE_RUN:
         if id_handcon == g.ID_MODE_ORG:
-            id_fmotreq == g.ID_MODE_RUN
+            g.id_fmotreq == g.ID_MODE_RUN
         else:
-            id_fmotreq == id_handcon
-    elif id_fmot == g.ID_MODE_ORG:
-        id_fmotreq = g.ID_MODE_ORG
-    elif id_fmot == g.ID_MODE_RUNTOSTP:
-        id_fmotreq = g.ID_MODE_STP
+            g.id_fmotreq == id_handcon
+    elif g.id_fmot == g.ID_MODE_ORG:
+        g.id_fmotreq = g.ID_MODE_ORG
+    elif g.id_fmot == g.ID_MODE_RUNTOSTP:
+        g.id_fmotreq = g.ID_MODE_STP
+    else:
+        g.id_fmotreq = g.ID_MODE_STP
     
-    if id_rmot == g.ID_MODE_STP:
-        id_rmotreq = id_handcon
-    elif id_rmot == g.ID_MODE_RUN:
+    if g.id_rmot == g.ID_MODE_STP:
+        g.id_rmotreq = id_handcon
+    elif g.id_rmot == g.ID_MODE_RUN:
         if id_handcon == g.ID_MODE_ORG:
-            id_rmotreq == g.ID_MODE_RUN
+            g.id_rmotreq == g.ID_MODE_RUN
         else:
-            id_rmotreq == id_handcon
-    elif id_rmot == g.ID_MODE_ORG:
-        id_rmotreq = g.ID_MODE_ORG
-    elif id_rmot == g.ID_MODE_RUNTOSTP:
-        id_rmotreq = g.ID_MODE_STP
-    
+            g.id_rmotreq == id_handcon
+    elif g.id_rmot == g.ID_MODE_ORG:
+        g.id_rmotreq = g.ID_MODE_ORG
+    elif g.id_rmot == g.ID_MODE_RUNTOSTP:
+        g.id_rmotreq = g.ID_MODE_STP
+    else:
+        g.id_rmotreq = g.ID_MODE_STP
+
     # 指定IDに応じてnmtgt決定（値自体は前回状態から100msかけて算出した結果→位置推定とかの処理考慮）
-    if (id_fmotreq == g.ID_MODE_RUN) & (id_rmotreq == g.ID_MODE_RUN):       # 前後モータにRUN指令できる場合
+    if (g.id_fmotreq == g.ID_MODE_RUN) & (g.id_rmotreq == g.ID_MODE_RUN):       # 前後モータにRUN指令できる場合
         sticknorm_ly, sticknorm_rx = hc.sticknorm(stick_ly, stick_rx)       # スティックデータの正規化
         g.nmtgt_l, g.nmtgt_r = nmtgt.nmtgtcal(sticknorm_ly, sticknorm_rx)   # モータ目標回転数算出
-        str.strset(sticknorm_rx)                                            # 前後ステアの操舵指示
+        strset(sticknorm_rx)                                            # 前後ステアの操舵指示
     else:
         g.nmtgt_l = 0
         g.nmtgt_r = 0
-        str.strstop()
+        strstop()
+        # sticknorm_ly, sticknorm_rx = hc.sticknorm(stick_ly, stick_rx)       # スティックデータの正規化
+        # strset(sticknorm_rx)
 
     # 指定ID、nmtgtを送信
-    g.nmact_fl, g.nmact_fr = spi_front.sendrec(g.nmtgt_l,g.nmtgt_r,id_fmotreq)
-    g.nmact_rl, g.nmact_rr = spi_rear.sendrec(g.nmtgt_l,g.nmtgt_r,id_rmotreq)
+    g.nmact_fl, g.nmact_fr = spi_front.sendrec(g.nmtgt_l,g.nmtgt_r,g.id_fmotreq)
+    g.nmact_rl, g.nmact_rr = spi_rear.sendrec(g.nmtgt_l,g.nmtgt_r,g.id_fmotreq)
 
     # 次周期に向けたnmtgt算出処理
+
+    # デバッグ用
+    print("{:.3f} {:.3f} {}".format(g.nmact_fl,g.nmact_fr,g.id_fmot))
+
 
 def main_func():
     global now_time
@@ -89,31 +110,25 @@ def main_func():
 
     cont_actuator()
 
-    print("実周期時間：{:.5f}[ms], バラツキ：{:.5f}[ms]".format((now_time-old_time)*1000,((now_time-old_time)-g.T_MAIN_TGT)*1000))
+    # print("実周期時間：{:.5f}[ms], バラツキ：{:.5f}[ms]".format((now_time-old_time)*1000,((now_time-old_time)-g.T_MAIN_TGT)*1000))
     tt = threading.Timer(g.T_MAIN, main_func)
     tt.start()
 
 # Loop
 while True:
-    # rec_first = uart.single_read()
-    rec_first = 255
+    rec_first = uart.single_read()
 
     # Wait Controller
     while rec_first == 255:
         print("Pushed 'Start Button' of PS3 Controller")
         time.sleep(1)
+        uart.write(255)
 
         # 初回でtt定義とstartメソッド呼び出し
-        tt = threading.Timer(g.T_MAIN, main_func)
-        tt.start()
+        # tt = threading.Timer(g.T_MAIN, main_func)
+        # tt.start()
 
         # Control Start
         while True:
-            time.sleep(2)
-
-            # except KeyboardInterrupt:
-            # #     str.strstop()
-            # #     uart.close()
-            # #     spi_front.close()
-            # #     spi_rear.close()
-                # break
+            cont_actuator()
+            # time.sleep(10)
