@@ -140,7 +140,7 @@ void main()
 				// ‚à‚µ‚Ü‚¾ƒ‚[ƒ^‚ª‰ñ‚Á‚Ä‚¢‚½‚ç’âŽ~ˆ—’†ID‚É‚·‚é
 				if (abs(s4g_mtcnt_nmsm1) > 5 | abs(s4g_mtcnt_nmsm2) > 5)
 				{
-					u1g_mtcnt_idmode = BITMASK_MODE_RUNTOSTP;
+					u1g_mtcnt_idmode = ID_MODE_RUNTOSTP;
 				}
 				else
 				{
