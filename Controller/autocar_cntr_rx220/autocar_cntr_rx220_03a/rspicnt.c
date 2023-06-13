@@ -113,7 +113,7 @@ void vdg_rspicnt_sendset(unsigned char mode)
         break;
         
         case ID_MODE_STP:
-            u4t_rspicnt_spdrset = 0;
+            u4t_rspicnt_spdrset = BITMASK_MODE_STP;
         break;
 
         case ID_MODE_RUNTOSTP:
