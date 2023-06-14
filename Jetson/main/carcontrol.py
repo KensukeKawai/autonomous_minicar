@@ -16,6 +16,7 @@ import handcontroller as hc
 global tt, now_time
 now_time = 0
 g.rec_f_id = g.ID_MODE_STP
+g.id_handcon_z = g.ID_MODE_STP
 g.nmtgt_l = 0
 g.nmtgt_r = 0
 
@@ -47,6 +48,7 @@ def strset(rx_norm):
 
 def cont_actuator():
     stick_ly,stick_rx,id_handcon = uart.read()   # Get Controller Value
+    id_handconmed = hc.idcal(id_handcon)
 
     # ID受信
     g.id_fmot = spi_front.rec_only_id()
@@ -54,26 +56,26 @@ def cont_actuator():
 
     # コントローラとID状態から指定ID判断
     if g.id_fmot == g.ID_MODE_STP:
-        g.id_fmotreq = id_handcon
+        g.id_fmotreq = id_handconmed
     elif g.id_fmot == g.ID_MODE_RUN:
-        if id_handcon == g.ID_MODE_ORG:
-            g.id_fmotreq == g.ID_MODE_RUN
+        if id_handconmed == g.ID_MODE_ORG:
+            g.id_fmotreq = g.ID_MODE_RUN
         else:
-            g.id_fmotreq == id_handcon
+            g.id_fmotreq = id_handconmed
     elif g.id_fmot == g.ID_MODE_ORG:
         g.id_fmotreq = g.ID_MODE_ORG
     elif g.id_fmot == g.ID_MODE_RUNTOSTP:
         g.id_fmotreq = g.ID_MODE_STP
     else:
         g.id_fmotreq = g.ID_MODE_STP
-    
+
     if g.id_rmot == g.ID_MODE_STP:
-        g.id_rmotreq = id_handcon
+        g.id_rmotreq = id_handconmed
     elif g.id_rmot == g.ID_MODE_RUN:
-        if id_handcon == g.ID_MODE_ORG:
-            g.id_rmotreq == g.ID_MODE_RUN
+        if id_handconmed == g.ID_MODE_ORG:
+            g.id_rmotreq = g.ID_MODE_RUN
         else:
-            g.id_rmotreq == id_handcon
+            g.id_rmotreq = id_handconmed
     elif g.id_rmot == g.ID_MODE_ORG:
         g.id_rmotreq = g.ID_MODE_ORG
     elif g.id_rmot == g.ID_MODE_RUNTOSTP:
@@ -95,25 +97,21 @@ def cont_actuator():
 
     # 指定ID、nmtgtを送信
     g.nmact_fl, g.nmact_fr = spi_front.sendrec(g.nmtgt_l,g.nmtgt_r,g.id_fmotreq)
-    print("{},{},{},{}".format(g.nmtgt_l,g.nmtgt_r,g.id_fmotreq,g.id_fmot))
-    # g.nmact_rl, g.nmact_rr = spi_rear.sendrec(g.nmtgt_l,g.nmtgt_r,g.id_fmotreq)
+    print(id_handcon,id_handconmed,g.id_fmotreq,g.id_fmot)
 
     # 次周期に向けたnmtgt算出処理
 
-    # デバッグ用
-    # print("{:.3f} {:.3f} {}".format(g.nmact_fl,g.nmact_fr,g.id_fmot))
 
+# def main_func():
+#     global now_time
+#     old_time = now_time
+#     now_time = time.time()
 
-def main_func():
-    global now_time
-    old_time = now_time
-    now_time = time.time()
+#     cont_actuator()
 
-    cont_actuator()
-
-    # print("実周期時間：{:.5f}[ms], バラツキ：{:.5f}[ms]".format((now_time-old_time)*1000,((now_time-old_time)-g.T_MAIN_TGT)*1000))
-    tt = threading.Timer(g.T_MAIN, main_func)
-    tt.start()
+#     # print("実周期時間：{:.5f}[ms], バラツキ：{:.5f}[ms]".format((now_time-old_time)*1000,((now_time-old_time)-g.T_MAIN_TGT)*1000))
+#     tt = threading.Timer(g.T_MAIN, main_func)
+#     tt.start()
 
 # Loop
 while True:
@@ -132,4 +130,4 @@ while True:
         # Control Start
         while True:
             cont_actuator()
-            time.sleep(0.2)
+            # time.sleep(0.2)

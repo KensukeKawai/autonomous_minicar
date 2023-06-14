@@ -118,10 +118,10 @@ class SPI():
     def rec_only_id(self):
         # Jetson受信のみの場合はIDをFにしてマイコン側に通達
         self.rec_data = self.spi.xfer2([0xF0,0x00,0x00,0x00])    # MSB First
-        # print("{}".format(self.rec_data))
-        # print("{} {} {} {}".format(self.rec_data[0],self.rec_data[1],self.rec_data[2],self.rec_data[3]))
+        # print(self.rec_data)
+        # print(self.rec_data[0],self.rec_data[1],self.rec_data[2],self.rec_data[3])
 
-        self.rec_mode = self.rec_data[3] >> 4
+        self.rec_mode = self.rec_data[0] >> 4
         if self.rec_mode > g.ID_MODE_MAX:
             self.rec_mode = g.ID_MODE_STP
         

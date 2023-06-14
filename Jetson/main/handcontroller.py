@@ -35,3 +35,13 @@ def sticknorm(ly, rx):
         sticknorm_rx = 0
         
     return sticknorm_ly, sticknorm_rx
+
+def idcal(id_handcon):
+    if g.id_handcon_z == g.ID_MODE_ORG and id_handcon == g.ID_MODE_ORG:
+        id_handconmed = g.ID_MODE_STP
+    else:
+        id_handconmed = id_handcon
+    # 前回値ラッチ
+    g.id_handcon_z = id_handcon
+
+    return id_handconmed
