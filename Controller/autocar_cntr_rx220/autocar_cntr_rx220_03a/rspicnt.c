@@ -8,6 +8,9 @@ volatile unsigned char u1g_rspicnt_idmoderq;
 volatile signed long s4g_rspicnt_nm1tgt;
 volatile signed long s4g_rspicnt_nm2tgt;
 
+/*****グローバル変数初期化*****/
+u1g_rspicnt_idmoderq = ID_MODE_STP;
+
 
 //受信有無判定、受信していたら目標回転数と制御モード更新
 void vdg_rspicnt_recget()

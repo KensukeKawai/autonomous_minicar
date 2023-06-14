@@ -95,12 +95,13 @@ def cont_actuator():
 
     # 指定ID、nmtgtを送信
     g.nmact_fl, g.nmact_fr = spi_front.sendrec(g.nmtgt_l,g.nmtgt_r,g.id_fmotreq)
-    g.nmact_rl, g.nmact_rr = spi_rear.sendrec(g.nmtgt_l,g.nmtgt_r,g.id_fmotreq)
+    print("{},{},{},{}".format(g.nmtgt_l,g.nmtgt_r,g.id_fmotreq,g.id_fmot))
+    # g.nmact_rl, g.nmact_rr = spi_rear.sendrec(g.nmtgt_l,g.nmtgt_r,g.id_fmotreq)
 
     # 次周期に向けたnmtgt算出処理
 
     # デバッグ用
-    print("{:.3f} {:.3f} {}".format(g.nmact_fl,g.nmact_fr,g.id_fmot))
+    # print("{:.3f} {:.3f} {}".format(g.nmact_fl,g.nmact_fr,g.id_fmot))
 
 
 def main_func():
@@ -131,4 +132,4 @@ while True:
         # Control Start
         while True:
             cont_actuator()
-            # time.sleep(10)
+            time.sleep(0.2)

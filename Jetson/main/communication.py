@@ -88,9 +88,13 @@ class SPI():
         self.send_B3 = (self.senddata>>16) & BITMASK_BYTE
         self.send_B4 = (self.senddata>>24) & BITMASK_BYTE
         self.rec_datalist = self.spi.xfer2([self.send_B4,self.send_B3,self.send_B2,self.send_B1])    # MSB First
+        # print("{}".format(self.rec_datalist))
+        # print("{},{},{},{}".format(self.send_B1,self.send_B2,self.send_B3,self.send_B4))
+ 
 
         # xfer2で受信したデータはlist型のため、bitシフトして32bitのデータに変換する
         self.rec_data = self.rec_datalist[0] | (self.rec_datalist[1]<<8) | (self.rec_datalist[2]<<16) | (self.rec_datalist[3]<<24)
+        # print("{}".format(self.rec_data))
 
         # 受信データ処理
         # self.rec_mode = self.rec_data >> BITSHIFT_MODE
@@ -112,8 +116,9 @@ class SPI():
         return self.rec_nm1, self.rec_nm2
     
     def rec_only_id(self):
-        # Jetson受信のみの場合はIDをFFにしてマイコン側に通達
+        # Jetson受信のみの場合はIDをFにしてマイコン側に通達
         self.rec_data = self.spi.xfer2([0xF0,0x00,0x00,0x00])    # MSB First
+        # print("{}".format(self.rec_data))
         # print("{} {} {} {}".format(self.rec_data[0],self.rec_data[1],self.rec_data[2],self.rec_data[3]))
 
         self.rec_mode = self.rec_data[3] >> 4
