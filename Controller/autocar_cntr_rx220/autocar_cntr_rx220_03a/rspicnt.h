@@ -3,7 +3,9 @@
 #define _RSPICNT_H_
 
 /***************ŠÖ”extern**************/
+extern void vdg_rspicnt_init();
 extern void vdg_rspicnt_recget();
+extern void vdg_rspicnt_sendset(unsigned char mode);
 
 /***************ƒOƒ[ƒoƒ‹•Ï”extern**************/
 extern volatile unsigned char u1g_rspicnt_idmoderq;

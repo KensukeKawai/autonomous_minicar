@@ -18,6 +18,9 @@ void initialize()
 	vdg_SPI_init();
 	// vdg_IRQ_init();		// フォトインタラプタ等で外部割込みしたい場合は使う
 	vdg_IPR_init();
+
+	// 外部モジュールの初期化
+	vdg_rspicnt_init();
 }
 
 // 所定のID要求が来るまでwhileで待機する関数

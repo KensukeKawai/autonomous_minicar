@@ -1,4 +1,4 @@
-Renesas Optimizing Linker (W3.05.00 )             12-Jun-2023 22:40:57
+Renesas Optimizing Linker (W2.05.00 )             15-Jun-2023 02:49:48
 
 *** Options ***
 
@@ -32,6 +32,7 @@ Renesas Optimizing Linker (W3.05.00 )             12-Jun-2023 22:40:57
 *** Mapping List ***
 
 SECTION                            START      END         SIZE   ALIGN
+
 B_1
                                   00000004  00000016        13   1
 R_1
@@ -73,17 +74,17 @@ D_2
 D
                                   fffc0584  fffc05bf        3c   4
 P
-                                  fffc05c0  fffc2281      1cc2   1
+                                  fffc05c0  fffc22d1      1d12   1
 PIntPRG
-                                  fffc2282  fffc2367        e6   1
+                                  fffc22d2  fffc23b7        e6   1
 W_1
-                                  fffc2368  fffc2371         a   1
+                                  fffc23b8  fffc23c1         a   1
 W_2
-                                  fffc2372  fffc2372         0   2
+                                  fffc23c2  fffc23c2         0   2
 W
-                                  fffc2374  fffc2374         0   4
+                                  fffc23c4  fffc23c4         0   4
 L
-                                  fffc2374  fffc2374         0   1
+                                  fffc23c4  fffc23c4         0   1
 $ADDR_C_FFFFFF80
                                   ffffff80  ffffff83         4   1
 $ADDR_C_FFFFFFA0
