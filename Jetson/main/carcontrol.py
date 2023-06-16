@@ -100,7 +100,7 @@ def cont_actuator():
 
     # 指定ID、nmtgtを送信
     g.nmact_fl, g.nmact_fr = spi_front.sendrec(g.nmtgt_l,g.nmtgt_r,g.id_fmotreq)
-    print(id_handcon,id_handconmed,g.id_fmotreq,g.id_fmot)
+    print(id_handconmed,g.id_fmotreq,g.id_fmot,g.nmact_fl,g.nmact_fr)
 
     # 次周期に向けたnmtgt算出処理
 
