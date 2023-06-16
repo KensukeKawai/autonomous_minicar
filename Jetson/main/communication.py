@@ -93,12 +93,12 @@ class SPI():
  
 
         # xfer2で受信したデータはlist型のため、bitシフトして32bitのデータに変換する
-        self.rec_data = self.rec_datalist[0] | (self.rec_datalist[1]<<8) | (self.rec_datalist[2]<<16) | (self.rec_datalist[3]<<24)
+        self.rec_data = self.rec_datalist[3] | (self.rec_datalist[2]<<8) | (self.rec_datalist[1]<<16) | (self.rec_datalist[0]<<24)
         # print("{}".format(self.rec_data))
 
         # 受信データ処理
         # self.rec_mode = self.rec_data >> BITSHIFT_MODE
-        self.rec_mode = self.rec_datalist[3] >> 4
+        self.rec_mode = self.rec_datalist[0] >> 4
         if self.rec_mode > g.ID_MODE_MAX:
             self.rec_mode = g.ID_MODE_STP
 
