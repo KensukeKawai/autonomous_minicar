@@ -11,8 +11,8 @@ class NMTGT():
 
     def nmtgtcal(self, nml_ly, nml_rx):
         # 左右の差動は前後で共通で良いため共通で計算
-        self.nmtgtnf_l = nml_ly * NMMAX * ( 1 + nml_rx * KMAXNMDIFF)     # 左スティック分×(1+右スティック×差動率最大値)
-        self.nmtgtnf_r = nml_ly * NMMAX * ( 1 - nml_rx * KMAXNMDIFF)    # 左スティック分×(1-右スティック×差動率最大値)
+        self.nmtgtnf_l = int(nml_ly * NMMAX * ( 1 + nml_rx * KMAXNMDIFF))     # 左スティック分×(1+右スティック×差動率最大値)
+        self.nmtgtnf_r = int(nml_ly * NMMAX * ( 1 - nml_rx * KMAXNMDIFF))    # 左スティック分×(1-右スティック×差動率最大値)
 
         self.nmtgt_l = self.nmtgtnf_l
         self.nmtgt_r = self.nmtgtnf_r
