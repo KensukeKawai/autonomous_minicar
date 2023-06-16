@@ -1,4 +1,4 @@
-Renesas Optimizing Linker (W2.05.00 )             17-Jun-2023 01:29:46
+Renesas Optimizing Linker (W2.05.00 )             17-Jun-2023 02:00:13
 
 *** Options ***
 
@@ -36,11 +36,11 @@ SECTION                            START      END         SIZE   ALIGN
 B_1
                                   00000004  00000016        13   1
 R_1
-                                  00000017  0000001e         8   1
+                                  00000017  0000001c         6   1
 B_2
-                                  00000020  0000002b         c   2
+                                  0000001e  00000029         c   2
 R_2
-                                  0000002c  00000037         c   2
+                                  0000002a  00000035         c   2
 B
                                   00000038  000004c3       48c   4
 R
@@ -68,23 +68,23 @@ C$VTBL
 C$VECT
                                   fffc0170  fffc056f       400   4
 D_1
-                                  fffc0570  fffc0577         8   1
+                                  fffc0570  fffc0575         6   1
 D_2
-                                  fffc0578  fffc0583         c   2
+                                  fffc0576  fffc0581         c   2
 D
                                   fffc0584  fffc05bf        3c   4
 P
-                                  fffc05c0  fffc22d0      1d11   1
+                                  fffc05c0  fffc22cd      1d0e   1
 PIntPRG
-                                  fffc22d1  fffc23b6        e6   1
+                                  fffc22ce  fffc23b3        e6   1
 W_1
-                                  fffc23b7  fffc23c0         a   1
+                                  fffc23b4  fffc23bd         a   1
 W_2
-                                  fffc23c2  fffc23c2         0   2
+                                  fffc23be  fffc23be         0   2
 W
-                                  fffc23c4  fffc23c4         0   4
+                                  fffc23c0  fffc23c0         0   4
 L
-                                  fffc23c4  fffc23c4         0   1
+                                  fffc23c0  fffc23c0         0   1
 $ADDR_C_FFFFFF80
                                   ffffff80  ffffff83         4   1
 $ADDR_C_FFFFFFA0

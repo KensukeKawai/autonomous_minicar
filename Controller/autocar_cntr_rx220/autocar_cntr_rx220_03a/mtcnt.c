@@ -695,10 +695,12 @@ void vdg_mtcnt_freewheelm2()
 void vdg_mtcnt_mtorigin()
 {
 	/***************static変数定義***************/
-	volatile static unsigned char u1s_mtcnt_cntoriginrot = 0;
-	volatile static unsigned char u1s_mtcnt_idstage = 0;
+	// volatile static unsigned char u1s_mtcnt_cntoriginrot = 0;
+	// volatile static unsigned char u1s_mtcnt_idstage = 0;
 
 	/***************テンポラリ変数定義***************/
+	volatile unsigned char u1s_mtcnt_cntoriginrot = 0;
+	volatile unsigned char u1s_mtcnt_idstage = 0;
 	volatile unsigned long u4t_mtcnt_spdrset;
 
 	// Jetsonに原点学習中であることを通知
