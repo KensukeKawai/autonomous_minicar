@@ -699,23 +699,23 @@ void vdg_mtcnt_mtorigin()
 	// volatile static unsigned char u1s_mtcnt_idstage = 0;
 
 	/***************テンポラリ変数定義***************/
-	volatile unsigned char u1s_mtcnt_cntoriginrot = 0;
-	volatile unsigned char u1s_mtcnt_idstage = 0;
-	volatile unsigned long u4t_mtcnt_spdrset;
+	volatile unsigned char u1t_mtcnt_cntoriginrot = 0;
+	volatile unsigned char u1t_mtcnt_idstage = 0;
+	// volatile unsigned long u4t_mtcnt_spdrset;
 
 	// Jetsonに原点学習中であることを通知
 	vdg_rspicnt_sendset(ID_MODE_ORG);
 
 	// 走行開始前にロータ位相をPhase1ホールドにしておくために7回実施
-	while (u1s_mtcnt_cntoriginrot < 7)
+	while (u1t_mtcnt_cntoriginrot < 7)
 	{
-		u1s_mtcnt_cntoriginrot++;
-		u1s_mtcnt_idstage++;
+		u1t_mtcnt_cntoriginrot++;
+		u1t_mtcnt_idstage++;
 
-		vdg_mtcnt_outset(ID_MOTOR1, u1s_mtcnt_idstage, CNT_ORIGINDUTY);
-		vdg_mtcnt_outset(ID_MOTOR2, u1s_mtcnt_idstage, CNT_ORIGINDUTY);
+		vdg_mtcnt_outset(ID_MOTOR1, u1t_mtcnt_idstage, CNT_ORIGINDUTY);
+		vdg_mtcnt_outset(ID_MOTOR2, u1t_mtcnt_idstage, CNT_ORIGINDUTY);
 
-		if(u1s_mtcnt_idstage >= 6){u1s_mtcnt_idstage = 0;}
+		if(u1t_mtcnt_idstage >= 6){u1t_mtcnt_idstage = 0;}
 
 		//ステージ毎に規定時間待つ
 		vdg_wait_nop(2000000);
@@ -738,5 +738,5 @@ void vdg_mtcnt_mtorigin()
 	u1g_mtcnt_idmode = ID_MODE_STP;
 	// 原点学習終了後は次周期で意図せぬ学習開始しないようにrq自体をSTPに遷移させておく
 	u1g_rspicnt_idmoderq = ID_MODE_STP;
-	vdg_rspicnt_sendset(ID_MODE_STP);
+	// vdg_rspicnt_sendset(ID_MODE_STP);
 }

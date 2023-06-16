@@ -57,8 +57,9 @@ void main()
 
 	// 初回は必ずJetsonから原点学習要求が来るまで待機
 	recwait(ID_MODE_ORG);
-	vdg_rspicnt_sendset(ID_MODE_ORG);
+	// vdg_rspicnt_sendset(ID_MODE_ORG);
 	vdg_mtcnt_mtorigin();									//原点学習処理(中でSTP処理入れてる)
+	vdg_rspicnt_sendset(ID_MODE_STP);						//原点学習が終了したらSTPをJetsonに送信
 		//メインループ初回でフリーホイール状態にしておくために全出力とカウント値をOFFに設定しておく
 	vdg_mtcnt_freewheelm1();
 	vdg_mtcnt_freewheelm2();
@@ -129,7 +130,7 @@ void main()
 			case ID_MODE_ORG:			//原点学習モード
 				if (u1g_mtcnt_idmode == ID_MODE_STP)
 				{
-					u1g_mtcnt_idmode = ID_MODE_ORG;
+					// u1g_mtcnt_idmode = ID_MODE_ORG;
 					//走行中か否かで先に停車処理させるか否か決める
 					//もし停車状態で原点学習できる状態なら実施
 					vdg_mtcnt_mtorigin();
