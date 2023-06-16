@@ -702,11 +702,7 @@ void vdg_mtcnt_mtorigin()
 	volatile unsigned long u4t_mtcnt_spdrset;
 
 	// Jetsonに原点学習中であることを通知
-	// u1g_mtcnt_idmode = ID_MODE_MTORIGIN;
 	vdg_rspicnt_sendset(ID_MODE_ORG);
-
-	// vdg_rspicnt_sendset(u1g_mtcnt_idmode);
-	// u4t_mtcnt_spdrset = BITMASK_MODE_MTORIGIN;
 
 	// 走行開始前にロータ位相をPhase1ホールドにしておくために7回実施
 	while (u1s_mtcnt_cntoriginrot < 7)
@@ -730,16 +726,11 @@ void vdg_mtcnt_mtorigin()
 
 	vdg_wait_nop(2000000);			//原点学習処理しエンコーダカウント初期化完了後所定時間待ち
 
-	//エンコーダTCNTカウントを学習すればロータ位置ホールド不要のため出力OFFにしておく
-	// vdg_mtcnt_outset(ID_MOTOR1, ID_ALLOFF, CNT_OUTOFF);
-	// vdg_mtcnt_outset(ID_MOTOR2, ID_ALLOFF, CNT_OUTOFF);
-
-	// // 原点学習が完了したことをJetsonに送信する
-	// u4t_mtcnt_spdrset = BITMASK_MODE_MTORIGIN;
-	// RSPI0.SPDR.LONG = u4t_mtcnt_spdrset;
-
 	// u1g_mtcnt_idstagem1 = ID_STAGE2;		// stage1ホールド状態を60degのstage2として少し進角させておく
 
+	//エンコーダTCNTカウントを学習すればロータ位置ホールド不要のため出力OFFにしておく
+	vdg_mtcnt_freewheelm1();
+	vdg_mtcnt_freewheelm2();
 
 	// JetsonにSTOPを通知し原点学習が完了した状態を知らせる
 	u1g_mtcnt_idmode = ID_MODE_STP;
