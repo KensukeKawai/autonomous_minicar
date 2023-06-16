@@ -83,6 +83,9 @@ def cont_actuator():
     else:
         g.id_rmotreq = g.ID_MODE_STP
 
+
+    g.id_rmotreq = g.ID_MODE_RUN        # デバッグ用
+
     # 指定IDに応じてnmtgt決定（値自体は前回状態から100msかけて算出した結果→位置推定とかの処理考慮）
     if (g.id_fmotreq == g.ID_MODE_RUN) & (g.id_rmotreq == g.ID_MODE_RUN):       # 前後モータにRUN指令できる場合
         sticknorm_ly, sticknorm_rx = hc.sticknorm(stick_ly, stick_rx)       # スティックデータの正規化
