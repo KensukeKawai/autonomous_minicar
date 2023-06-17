@@ -51,13 +51,11 @@ void main()
 	// }
 	// /*****jetson通信確認デバッグ用******/
 
-	
-
 	MTU.TSTR.BYTE = 0xC7;									//MTU0,1,2,3,4のTCNTカウント開始
 	vdg_mtcnt_outset(ID_MOTOR1, ID_ALLOFF, CNT_OUTOFF);		//モータ1の出力全OFF、カウントOFF
 	vdg_mtcnt_outset(ID_MOTOR2, ID_ALLOFF, CNT_OUTOFF);		//モータ2の出力全OFF、カウントOFF
 	// 初回は必ずJetsonから原点学習要求が来るまで待機
-	// recwait(ID_MODE_ORG);
+	recwait(ID_MODE_ORG);
 	vdg_mtcnt_mtorigin();									//原点学習処理(中でSTP処理入れてる)
 	vdg_rspicnt_sendset(ID_MODE_STP);						//原点学習が終了したらSTPをJetsonに送信
 		//メインループ初回でフリーホイール状態にしておくために全出力とカウント値をOFFに設定しておく
@@ -65,7 +63,7 @@ void main()
 	vdg_mtcnt_freewheelm2();
 
 	//Jetsonから通常モード指令が来るまで待機
-	// recwait(ID_MODE_RUN);
+	recwait(ID_MODE_RUN);
 	vdg_rspicnt_sendset(ID_MODE_RUN);
 
 	/********** メインループ処理 **********/
@@ -87,8 +85,6 @@ void main()
 		vdg_mtcnt_orthantjdg();						//LPF後回転数と「目標Nm-LPF後回転数」から4象限状態判定
 		vdg_mtcnt_stagephasejdg();					//進行方向と現在電気角からステージ設定(stagejdg)
 		/*****idstagem12の算出*****/
-
-		vdg_scicnt_sciset();
 
 		/*****電流センサ処理*****/
 		while(u1g_exs12adi0_xadcex != 1);			//ADC終了待ち
@@ -129,16 +125,17 @@ void main()
 				}
 			break;
 
-			case ID_MODE_ORG:			//原点学習モード
-				if (u1g_mtcnt_idmode == ID_MODE_STP)
-				{
-					// u1g_mtcnt_idmode = ID_MODE_ORG;
-					//走行中か否かで先に停車処理させるか否か決める
-					//もし停車状態で原点学習できる状態なら実施
-					vdg_mtcnt_mtorigin();
-				}
-				// 停車中でない場合はMODEは前回値保持とする
-			break;
+			// なぜかメインループ内で原点学習要求出すとORGから抜け出せなくなるため一旦無効化しておく
+			// case ID_MODE_ORG:			//原点学習モード
+			// 	if (u1g_mtcnt_idmode == ID_MODE_STP)
+			// 	{
+			// 		// u1g_mtcnt_idmode = ID_MODE_ORG;
+			// 		//走行中か否かで先に停車処理させるか否か決める
+			// 		//もし停車状態で原点学習できる状態なら実施
+			// 		vdg_mtcnt_mtorigin();
+			// 	}
+			// 	// 停車中でない場合はMODEは前回値保持とする
+			// break;
 
 			case ID_MODE_STP:						//車両停車モード
 				vdg_mtcnt_freewheelm1();
@@ -155,12 +152,14 @@ void main()
 			break;
 		}
 		/*****要求モードに合わせて処理選択*****/
-		/********************次周期出力用の処理********************/
 
-		//SPIバッファに送信データ書き込み
-		vdg_rspicnt_sendset(u1g_mtcnt_idmode);
+		/****次周期出力用の処理*****/
 
-		// //PCとのシリアル通信必要だったら処理入れる。今のところマストではない。
+		/****次周期出力用の処理*****/
+
+		/****通信処理*****/
+		vdg_rspicnt_sendset(u1g_mtcnt_idmode);			//SPIバッファに送信データ書き込み
+		vdg_scicnt_sciset();							//PCとのシリアル通信
 	}//while
 }//main
 
