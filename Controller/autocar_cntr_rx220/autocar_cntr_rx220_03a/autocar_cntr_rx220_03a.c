@@ -14,7 +14,7 @@ void initialize()
 	vdg_MPC_init();
 	vdg_MTU2a_init();
 	vdg_S12AD_init();
-	// vdg_SCI_init();		// PCとシリアル通信したい場合は使う
+	vdg_SCI_init();		// PCとシリアル通信したい場合は使う
 	vdg_SPI_init();
 	// vdg_IRQ_init();		// フォトインタラプタ等で外部割込みしたい場合は使う
 	vdg_IPR_init();
@@ -51,13 +51,13 @@ void main()
 	// }
 	// /*****jetson通信確認デバッグ用******/
 
+	
+
 	MTU.TSTR.BYTE = 0xC7;									//MTU0,1,2,3,4のTCNTカウント開始
 	vdg_mtcnt_outset(ID_MOTOR1, ID_ALLOFF, CNT_OUTOFF);		//モータ1の出力全OFF、カウントOFF
 	vdg_mtcnt_outset(ID_MOTOR2, ID_ALLOFF, CNT_OUTOFF);		//モータ2の出力全OFF、カウントOFF
-
 	// 初回は必ずJetsonから原点学習要求が来るまで待機
-	recwait(ID_MODE_ORG);
-	// vdg_rspicnt_sendset(ID_MODE_ORG);
+	// recwait(ID_MODE_ORG);
 	vdg_mtcnt_mtorigin();									//原点学習処理(中でSTP処理入れてる)
 	vdg_rspicnt_sendset(ID_MODE_STP);						//原点学習が終了したらSTPをJetsonに送信
 		//メインループ初回でフリーホイール状態にしておくために全出力とカウント値をOFFに設定しておく
@@ -65,7 +65,7 @@ void main()
 	vdg_mtcnt_freewheelm2();
 
 	//Jetsonから通常モード指令が来るまで待機
-	recwait(ID_MODE_RUN);
+	// recwait(ID_MODE_RUN);
 	vdg_rspicnt_sendset(ID_MODE_RUN);
 
 	/********** メインループ処理 **********/
@@ -87,6 +87,8 @@ void main()
 		vdg_mtcnt_orthantjdg();						//LPF後回転数と「目標Nm-LPF後回転数」から4象限状態判定
 		vdg_mtcnt_stagephasejdg();					//進行方向と現在電気角からステージ設定(stagejdg)
 		/*****idstagem12の算出*****/
+
+		vdg_scicnt_sciset();
 
 		/*****電流センサ処理*****/
 		while(u1g_exs12adi0_xadcex != 1);			//ADC終了待ち
