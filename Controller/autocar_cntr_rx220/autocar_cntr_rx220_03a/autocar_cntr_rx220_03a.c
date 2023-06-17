@@ -63,8 +63,8 @@ void main()
 	vdg_mtcnt_freewheelm2();
 
 	//Jetsonから通常モード指令が来るまで待機
-	recwait(ID_MODE_RUN);
-	vdg_rspicnt_sendset(ID_MODE_RUN);
+	// recwait(ID_MODE_RUN);
+	
 
 	/********** メインループ処理 **********/
 	while(1)
@@ -126,16 +126,17 @@ void main()
 			break;
 
 			// なぜかメインループ内で原点学習要求出すとORGから抜け出せなくなるため一旦無効化しておく
-			// case ID_MODE_ORG:			//原点学習モード
-			// 	if (u1g_mtcnt_idmode == ID_MODE_STP)
-			// 	{
-			// 		// u1g_mtcnt_idmode = ID_MODE_ORG;
-			// 		//走行中か否かで先に停車処理させるか否か決める
-			// 		//もし停車状態で原点学習できる状態なら実施
-			// 		vdg_mtcnt_mtorigin();
-			// 	}
-			// 	// 停車中でない場合はMODEは前回値保持とする
-			// break;
+			case ID_MODE_ORG:			//原点学習モード
+			u1g_mtcnt_idmode = ID_MODE_STP;
+				// if (u1g_mtcnt_idmode == ID_MODE_STP)
+				// {
+				// 	// u1g_mtcnt_idmode = ID_MODE_ORG;
+				// 	//走行中か否かで先に停車処理させるか否か決める
+				// 	//もし停車状態で原点学習できる状態なら実施
+				// 	vdg_mtcnt_mtorigin();
+				// }
+				// 停車中でない場合はMODEは前回値保持とする
+			break;
 
 			case ID_MODE_STP:						//車両停車モード
 				vdg_mtcnt_freewheelm1();
