@@ -89,21 +89,16 @@ def cont_actuator():
 
     # 指定IDに応じてnmtgt決定（値自体は前回状態から100msかけて算出した結果→位置推定とかの処理考慮）
     if (g.id_fmotreq == g.ID_MODE_RUN) & (g.id_rmotreq == g.ID_MODE_RUN):       # 前後モータにRUN指令できる場合
-        # print(stick_ly,sticknorm_ly)
         g.nmtgt_l, g.nmtgt_r = nmtgt.nmtgtcal(sticknorm_ly, sticknorm_rx)   # モータ目標回転数算出
         strset(sticknorm_rx)                                            # 前後ステアの操舵指示
     else:
         g.nmtgt_l = 0
         g.nmtgt_r = 0
         strstop()
-        # sticknorm_ly, sticknorm_rx = hc.sticknorm(stick_ly, stick_rx)       # スティックデータの正規化
-        # strset(sticknorm_rx)
 
     # 指定ID、nmtgtを送信
     g.nmact_fl, g.nmact_fr = spi_front.sendrec(g.nmtgt_l,g.nmtgt_r,g.id_fmotreq)
-
-
-    # print(g.id_fmotreq,g.id_fmot,g.nmtgt_l,g.nmact_fl)
+    print(g.id_fmotreq,g.id_fmot,g.nmtgt_l,g.nmact_fl)
 
     # 次周期に向けたnmtgt算出処理
 
@@ -136,4 +131,4 @@ while True:
         # Control Start
         while True:
             cont_actuator()
-            # time.sleep(0.2)
+            # time.sleep(0.1)

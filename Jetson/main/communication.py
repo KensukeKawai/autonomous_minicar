@@ -90,7 +90,8 @@ class SPI():
         self.rec_datalist = self.spi.xfer2([self.send_B4,self.send_B3,self.send_B2,self.send_B1])    # MSB First
         # print("{}".format(self.rec_datalist))
         # print("{},{},{},{}".format(self.send_B4,self.send_B3,self.send_B2,self.send_B1))
-        print(self.senddata)
+        # print(self.senddata)
+        # print(self.send_B4>>4)
  
 
         # xfer2で受信したデータはlist型のため、bitシフトして32bitのデータに変換する
