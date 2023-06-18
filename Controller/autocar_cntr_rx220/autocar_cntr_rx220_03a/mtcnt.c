@@ -701,6 +701,7 @@ void vdg_mtcnt_mtorigin()
 	/***************テンポラリ変数定義***************/
 	volatile unsigned char u1t_mtcnt_cntoriginrot = 0;
 	volatile unsigned char u1t_mtcnt_idstage = 0;
+	volatile unsigned long i = 0;
 	// volatile unsigned long u4t_mtcnt_spdrset;
 
 	// Jetsonに原点学習中であることを通知
@@ -718,7 +719,12 @@ void vdg_mtcnt_mtorigin()
 		if(u1t_mtcnt_idstage >= 6){u1t_mtcnt_idstage = 0;}
 
 		//ステージ毎に規定時間待つ
-		vdg_wait_nop(2000000);
+		for(i=0; i<7; i++)
+		{
+			while(u1g_exspri0_xrspirec != 1);
+			u1g_exspri0_xrspirec = 0;
+			vdg_rspicnt_recget();
+		}
 	}
 
 	//エンコーダ角度情報を保存するためにロータ位置を固定状態にしておく
@@ -726,7 +732,13 @@ void vdg_mtcnt_mtorigin()
 	MTU_M1_ENCTCNT = TCNT_ENC_DEFAULT;
 	MTU_M2_ENCTCNT = TCNT_ENC_DEFAULT;
 
-	vdg_wait_nop(2000000);			//原点学習処理しエンコーダカウント初期化完了後所定時間待ち
+	//原点学習処理しエンコーダカウント初期化完了後所定時間待ち
+	for(i=0; i<7; i++)
+	{
+		while(u1g_exspri0_xrspirec != 1);
+		u1g_exspri0_xrspirec = 0;
+		vdg_rspicnt_recget();
+	}
 
 	// u1g_mtcnt_idstagem1 = ID_STAGE2;		// stage1ホールド状態を60degのstage2として少し進角させておく
 

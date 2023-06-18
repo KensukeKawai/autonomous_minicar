@@ -50,14 +50,16 @@ void vdg_scicnt_sciset()
 
 			u2s_sciset_stringarray[0] = u1g_rspicnt_idmoderq;
 			u2s_sciset_stringarray[1] = u1g_mtcnt_idmode;
+			u2s_sciset_stringarray[2] = u1g_exspri0_xrspirec;
+			u2s_sciset_stringarray[3] = 0;
 			
-			u2s_sciset_stringarray[2] = (unsigned short)abs(s4g_rspicnt_nm1tgt / 100);
-			u2s_sciset_stringarray[3] = (unsigned short)abs((s4g_rspicnt_nm1tgt % 100) / 10);
-			u2s_sciset_stringarray[4] = (unsigned short)abs(s4g_rspicnt_nm1tgt % 10);
+			u2s_sciset_stringarray[4] = (unsigned short)abs(s4g_rspicnt_nm1tgt / 100);
+			u2s_sciset_stringarray[5] = (unsigned short)abs((s4g_rspicnt_nm1tgt % 100) / 10);
+			u2s_sciset_stringarray[6] = (unsigned short)abs(s4g_rspicnt_nm1tgt % 10);
 			
-			u2s_sciset_stringarray[5] = (unsigned short)abs(s4g_mtcnt_nmsm1 / 100);
-			u2s_sciset_stringarray[6] = (unsigned short)abs((s4g_mtcnt_nmsm1 % 100) / 10);
-			u2s_sciset_stringarray[7] = (unsigned short)abs(s4g_mtcnt_nmsm1 % 10);
+			u2s_sciset_stringarray[7] = (unsigned short)abs(s4g_mtcnt_nmsm1 / 100);
+			u2s_sciset_stringarray[8] = (unsigned short)abs((s4g_mtcnt_nmsm1 % 100) / 10);
+			u2s_sciset_stringarray[9] = (unsigned short)abs(s4g_mtcnt_nmsm1 % 10);
 
 			u1s_sciset_sendnum++;
 			break;
@@ -74,7 +76,18 @@ void vdg_scicnt_sciset()
 			break;
 
 			case 2:
-				for(i = 2; i < 5; i++)
+				vdg_scicnt_scisend(u2s_sciset_stringarray[2]);
+				while(SCI1.SSR.BIT.TEND == 0);
+				SCI1.TDR = ',';
+				while(SCI1.SSR.BIT.TEND == 0);
+				vdg_scicnt_scisend(u2s_sciset_stringarray[3]);
+				while(SCI1.SSR.BIT.TEND == 0);
+				SCI1.TDR = ',';
+				u1s_sciset_sendnum++;
+			break;
+
+			case 3:
+				for(i = 4; i < 7; i++)
 				{
 					vdg_scicnt_scisend(u2s_sciset_stringarray[i]);
 					while(SCI1.SSR.BIT.TEND == 0);
@@ -83,8 +96,8 @@ void vdg_scicnt_sciset()
 				u1s_sciset_sendnum++;
 			break;
 
-			case 3:
-				for(i = 5; i < 8; i++)
+			case 4:
+				for(i = 7; i < 10; i++)
 				{
 					vdg_scicnt_scisend(u2s_sciset_stringarray[i]);
 					while(SCI1.SSR.BIT.TEND == 0);

@@ -26,7 +26,6 @@ void vdg_rspicnt_recget()
 
     /*****割りつけられたbitに対応する判断、データ処理*****/
     //制御モード要求取得
-    // u4t_rspicnt_spdrrecmd = u4t_rspicnt_spdrrec & BITMASK_MODE;
     u4t_rspicnt_spdrrecmd = u4t_rspicnt_spdrrec >> BITSHIFT_MODE;
 
     switch (u4t_rspicnt_spdrrecmd)

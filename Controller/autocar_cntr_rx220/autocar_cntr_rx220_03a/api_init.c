@@ -225,7 +225,7 @@ void vdg_SCI_init()
 	SCI1.SEMR.BIT.ABCS = 1;			//基本クロック8サイクルで1ビット分
 	SCI1.SEMR.BIT.NFEN = 1;			//ディジタルノイズフィルタ有効
 	SCI1.SNFR.BIT.NFCS = 4;			//8分周分のクロックをノイズフィルタに使用
-	SCI1.BRR = 9;					//3:500000bps,9:200000bps
+	SCI1.BRR = 3;					//3:500000bps,9:200000bps
 	SCI1.SCR.BIT.RE = 1;			//受信動作を許可
 	SCI1.SCR.BIT.TE = 1;			//送信動作を許可
 	SCI1.SCR.BIT.RIE = 1;			//受信及びエラー割込み要求を許可
