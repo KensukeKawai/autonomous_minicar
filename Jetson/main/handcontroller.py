@@ -3,7 +3,7 @@ import globalval as g
 
 # Const
 STICK_CENTER = 127                          # スティックの受信中心値
-STICK_HYS = 3                               # スティックの中心ヒス
+STICK_HYS = 20                               # スティックの中心ヒス
 STICK_FWD = 128 - STICK_HYS                 # ヒス処理した正方向のスティック値
 STICK_REV = 127 - STICK_HYS                 # ヒス処理した負方向のスティック値
 
@@ -34,7 +34,7 @@ def sticknorm(ly, rx):
     else:
         sticknorm_rx = 0
         
-    return sticknorm_ly, sticknorm_rx
+    return -sticknorm_ly, sticknorm_rx
 
 def idcal(id_handcon):
     if g.id_handcon_z == g.ID_MODE_ORG and id_handcon == g.ID_MODE_ORG:

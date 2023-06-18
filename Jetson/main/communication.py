@@ -56,8 +56,8 @@ class SPI():
     # bit処理してSPI送受信処理
     def sendrec(self, nmtgtm1, nmtgtm2, id):
         # 初期化
-        self.nmtgtm1 = 0
-        self.nmtgtm2 = 0
+        # self.nmtgtm1 = 0
+        # self.nmtgtm2 = 0
 
         # モータ目標回転数
         if nmtgtm1 < 0:
@@ -89,7 +89,8 @@ class SPI():
         self.send_B4 = (self.senddata>>24) & BITMASK_BYTE
         self.rec_datalist = self.spi.xfer2([self.send_B4,self.send_B3,self.send_B2,self.send_B1])    # MSB First
         # print("{}".format(self.rec_datalist))
-        # print("{},{},{},{}".format(self.send_B1,self.send_B2,self.send_B3,self.send_B4))
+        # print("{},{},{},{}".format(self.send_B4,self.send_B3,self.send_B2,self.send_B1))
+        print(self.senddata)
  
 
         # xfer2で受信したデータはlist型のため、bitシフトして32bitのデータに変換する
@@ -118,12 +119,9 @@ class SPI():
     def rec_only_id(self):
         # Jetson受信のみの場合はIDをFにしてマイコン側に通達
         self.rec_data = self.spi.xfer2([0xF0,0x00,0x00,0x00])    # MSB First
-        # print(self.rec_data)
-        # print(self.rec_data[0],self.rec_data[1],self.rec_data[2],self.rec_data[3])
 
         self.rec_mode = self.rec_data[0] >> 4
         if self.rec_mode > g.ID_MODE_MAX:
             self.rec_mode = g.ID_MODE_STP
         
         return self.rec_mode
-        # return self.rec_data[3]
