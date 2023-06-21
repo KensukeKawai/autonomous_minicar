@@ -48,14 +48,14 @@ void vdg_scicnt_sciset()
 			// u2t_sciset_nmtabs = (unsigned short)abs(s4g_rspicnt_nm1tgt);
 			// u2t_sciset_nmabs = (unsigned short)abs(s4g_mtcnt_nmsm1);
 
-			u2s_sciset_stringarray[0] = u1g_rspicnt_idmoderq;
-			u2s_sciset_stringarray[1] = u1g_mtcnt_idmode;
-			u2s_sciset_stringarray[2] = u1g_exspri0_xrspirec;
+			u2s_sciset_stringarray[0] = u1g_mtcnt_idstagem1;
+			u2s_sciset_stringarray[1] = u1g_mtcnt_idorthantm1;
+			u2s_sciset_stringarray[2] = 0;
 			u2s_sciset_stringarray[3] = 0;
 			
-			u2s_sciset_stringarray[4] = (unsigned short)abs(s4g_rspicnt_nm1tgt / 100);
-			u2s_sciset_stringarray[5] = (unsigned short)abs((s4g_rspicnt_nm1tgt % 100) / 10);
-			u2s_sciset_stringarray[6] = (unsigned short)abs(s4g_rspicnt_nm1tgt % 10);
+			u2s_sciset_stringarray[4] = (unsigned short)abs((unsigned long)(f4g_mtsensor_eanglem1) / 100);
+			u2s_sciset_stringarray[5] = (unsigned short)abs(((unsigned long)(f4g_mtsensor_eanglem1) % 100) / 10);
+			u2s_sciset_stringarray[6] = (unsigned short)abs((unsigned long)(f4g_mtsensor_eanglem1) % 10);
 			
 			u2s_sciset_stringarray[7] = (unsigned short)abs(s4g_mtcnt_nmsm1 / 100);
 			u2s_sciset_stringarray[8] = (unsigned short)abs((s4g_mtcnt_nmsm1 % 100) / 10);
@@ -67,7 +67,7 @@ void vdg_scicnt_sciset()
 			case 1:
 				vdg_scicnt_scisend(u2s_sciset_stringarray[0]);
 				while(SCI1.SSR.BIT.TEND == 0);
-				SCI1.TDR = ':';
+				SCI1.TDR = ',';
 				while(SCI1.SSR.BIT.TEND == 0);
 				vdg_scicnt_scisend(u2s_sciset_stringarray[1]);
 				while(SCI1.SSR.BIT.TEND == 0);

@@ -110,7 +110,6 @@ void main()
 				{
 					vdg_mtcnt_freewheelm1();
 				}
-
 				/*****Motor2*****/
 				if ((u1g_mtcnt_idorthantm2==ID_MTRUN_FWDPWR) || (u1g_mtcnt_idorthantm2==ID_MTRUN_REVPWR))
 				{

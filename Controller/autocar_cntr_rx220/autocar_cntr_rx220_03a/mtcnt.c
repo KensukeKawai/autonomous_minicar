@@ -57,17 +57,17 @@ void vdg_mtcnt_stagejdg(unsigned char motor, unsigned char id_direction)
 			//前進方向に進角
 			case ID_MT_ADV:
 			if(f4g_mtsensor_eanglem1>=0 && f4g_mtsensor_eanglem1<60)
-			{ u1g_mtcnt_idstagem1 = ID_STAGE1; }
-			else if(f4g_mtsensor_eanglem1>=60 && f4g_mtsensor_eanglem1<120)
-			{ u1g_mtcnt_idstagem1 = ID_STAGE2; }
-			else if(f4g_mtsensor_eanglem1>=120 && f4g_mtsensor_eanglem1<180)
 			{ u1g_mtcnt_idstagem1 = ID_STAGE3; }
-			else if(f4g_mtsensor_eanglem1>=180 && f4g_mtsensor_eanglem1<240)
+			else if(f4g_mtsensor_eanglem1>=60 && f4g_mtsensor_eanglem1<120)
 			{ u1g_mtcnt_idstagem1 = ID_STAGE4; }
-			else if(f4g_mtsensor_eanglem1>=240 && f4g_mtsensor_eanglem1<300)
+			else if(f4g_mtsensor_eanglem1>=120 && f4g_mtsensor_eanglem1<180)
 			{ u1g_mtcnt_idstagem1 = ID_STAGE5; }
-			else if(f4g_mtsensor_eanglem1>=300 && f4g_mtsensor_eanglem1<360)
+			else if(f4g_mtsensor_eanglem1>=180 && f4g_mtsensor_eanglem1<240)
 			{ u1g_mtcnt_idstagem1 = ID_STAGE6; }
+			else if(f4g_mtsensor_eanglem1>=240 && f4g_mtsensor_eanglem1<300)
+			{ u1g_mtcnt_idstagem1 = ID_STAGE1; }
+			else if(f4g_mtsensor_eanglem1>=300 && f4g_mtsensor_eanglem1<360)
+			{ u1g_mtcnt_idstagem1 = ID_STAGE2; }
 			break;
 			//後進方向に進角
 			case ID_MT_BACK:
@@ -702,7 +702,7 @@ void vdg_mtcnt_mtorigin()
 	volatile unsigned char u1t_mtcnt_cntoriginrot = 0;
 	volatile unsigned char u1t_mtcnt_idstage = 0;
 	volatile unsigned long i = 0;
-	// volatile unsigned long u4t_mtcnt_spdrset;
+	// volatile unsigned long u4t																																																								`qaq_mtcnt_spdrset;
 
 	// Jetsonに原点学習中であることを通知
 	vdg_rspicnt_sendset(ID_MODE_ORG);
@@ -741,6 +741,7 @@ void vdg_mtcnt_mtorigin()
 	}
 
 	// u1g_mtcnt_idstagem1 = ID_STAGE2;		// stage1ホールド状態を60degのstage2として少し進角させておく
+	// u1g_mtcnt_idstagem2 = ID_STAGE2;
 
 	//エンコーダTCNTカウントを学習すればロータ位置ホールド不要のため出力OFFにしておく
 	vdg_mtcnt_freewheelm1();

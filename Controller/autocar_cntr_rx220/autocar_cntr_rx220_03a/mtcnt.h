@@ -72,12 +72,13 @@ extern volatile unsigned char u1g_mtcnt_xstop;
 #define ID_MT_BACK 2
 
 
-/***電流制限パラメータ***/
-#define KP_FB ((float)(0.002))              //Pゲイン
+/***FB項パラメータ***/
+#define KP_FB ((float)(0.005))              //Pゲイン
 #define KI_FB ((float)(0.00001))            //Iゲイン。今は未使用。
 #define KP_ILIM ((float)(0.2))              //電流制限FB項のPゲイン
 
-#define I_MAX ((float)(2))                //力行時の電流制限値
+/*****電流制限値*****/
+#define I_MAX ((float)(4))                //力行時の電流制限値
 #define I_MIN ((float)(-2))                 //回生時の電流制限値
 
 /***Duty設定***/
