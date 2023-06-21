@@ -2,7 +2,7 @@
 import globalval as g
 
 # *****Constant *****
-NMMAX = 1000                                 # 最大モータ目標回転数
+NMMAX = 4000                                 # 最大モータ目標回転数
 KMAXNMDIFF = 0.3                            # 操舵時の左右モータ差動率最大値
 RT_NMTGT = NMMAX * g.T_MAIN_TGT             # 1秒でNMMAXに達するレートにしておく
 
