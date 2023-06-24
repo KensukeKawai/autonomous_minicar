@@ -470,7 +470,6 @@ void vdg_mtcnt_tgrpwrcalm1()
 	volatile static float f4s_mtcnt_dutym1fb;
 	volatile static float f4s_mtcnt_dutym1fbilim;
 	volatile static float f4s_mtcnt_dutym1;
-	volatile static unsigned long u4s_mtcnt_nm1diffabs;
 	volatile static signed long s4s_mtcnt_nm1diff;
 
 	/***************テンポラリ変数定義***************/
@@ -539,7 +538,7 @@ void vdg_mtcnt_tgrpwrcalm2()
 	volatile static float f4s_mtcnt_dutym2fb;
 	volatile static float f4s_mtcnt_dutym2fbilim;
 	volatile static float f4s_mtcnt_dutym2;
-	volatile static unsigned long u4s_mtcnt_nm2diffabs;
+	volatile static signed long s4s_mtcnt_nm2diff;
 
 	/***************テンポラリ変数定義***************/
 	volatile unsigned short u2s_mtcnt_cntm2pre;
@@ -723,7 +722,7 @@ void vdg_mtcnt_mtorigin()
 	/***************テンポラリ変数定義***************/
 	volatile unsigned char u1t_mtcnt_cntoriginrot = 0;
 	volatile unsigned char u1t_mtcnt_idstage = 0;
-	volatile unsigned long i = 0;																																																						`qaq_mtcnt_spdrset;
+	volatile unsigned long i = 0;
 
 	// Jetsonに原点学習中であることを通知
 	vdg_rspicnt_sendset(ID_MODE_ORG);
