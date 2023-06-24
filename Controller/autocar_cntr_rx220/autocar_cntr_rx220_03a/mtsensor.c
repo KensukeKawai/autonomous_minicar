@@ -108,7 +108,6 @@ void vdg_mtsensor_encoder()
 
     /*****‰ñ“]”Zo*****/
     //ƒ¢‹@ŠBŠp(1üŠú“–‚½‚è)•ªƒJƒEƒ“ƒg~ƒJƒEƒ“ƒgto‹@ŠBŠpŒW”~ƒLƒƒƒŠƒAü”g”/360~60
-    // s4t_mtsensor_nm1pre = (signed long)((float)s4t_mtsensor_denccntm1*KPLS2MANGLE*HZ_CARRIER/6);
     s4t_mtsensor_nm1pre = (signed long)((float)(s4t_mtsensor_denccntm1)*KPLS2MANGLE*(float)(HZ_CARRIER)/(float)(6));
     s4t_mtsensor_nm2pre = (signed long)((float)(s4t_mtsensor_denccntm2)*KPLS2MANGLE*(float)(HZ_CARRIER)/(float)(6));
 

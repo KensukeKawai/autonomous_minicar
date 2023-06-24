@@ -74,8 +74,6 @@ void vdg_rspicnt_recget()
             u1g_rspicnt_idmoderq = ID_MODE_STP;
         break;
     }
-
-    // RSPI0.SPDR.LONG = u4t_rspicnt_spdrrec;  // Tmp
 }
 
 void vdg_rspicnt_sendset(unsigned char mode)

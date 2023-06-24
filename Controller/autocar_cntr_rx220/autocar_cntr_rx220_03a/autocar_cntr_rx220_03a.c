@@ -40,17 +40,6 @@ void recwait(unsigned char idmoderq)
 void main()
 {
 	initialize();
-	// /*****jetson通信確認デバッグ用******/
-	// while(1)
-	// {
-	// 	if(u1g_exspri0_xrspirec == 1)
-	// 	{
-	// 		u1g_exspri0_xrspirec = 0;
-	// 		vdg_rspicnt_recget();
-	// 		// vdg_rspicnt_sendset();
-	// 	}
-	// }
-	// /*****jetson通信確認デバッグ用******/
 
 	MTU.TSTR.BYTE = 0xC7;									//MTU0,1,2,3,4のTCNTカウント開始
 	vdg_mtcnt_outset(ID_MOTOR1, ID_ALLOFF, CNT_OUTOFF);		//モータ1の出力全OFF、カウントOFF
@@ -59,9 +48,6 @@ void main()
 	recwait(ID_MODE_ORG);
 	vdg_mtcnt_mtorigin();									//原点学習処理(中でSTP処理入れてる)
 	vdg_rspicnt_sendset(ID_MODE_STP);						//原点学習が終了したらSTPをJetsonに送信
-
-	//Jetsonから通常モード指令が来るまで待機
-	// recwait(ID_MODE_RUN);
 
 	/********** メインループ処理 **********/
 	while(1)
@@ -136,7 +122,7 @@ void main()
 				vdg_mtcnt_freewheelm1();
 				vdg_mtcnt_freewheelm2();
 				// もしまだモータが回っていたら停止処理中IDにする
-				if (abs(s4g_mtcnt_nmsm1) > 5 | abs(s4g_mtcnt_nmsm2) > 5)
+				if (abs(s4g_mtcnt_nmsm1) >= NM_STP | abs(s4g_mtcnt_nmsm2) >= NM_STP)
 				{
 					u1g_mtcnt_idmode = ID_MODE_RUNTOSTP;
 				}

@@ -19,6 +19,18 @@ volatile unsigned char u1g_mtcnt_xnormal;
 volatile unsigned char u1g_mtcnt_xmtorigin;
 volatile unsigned char u1g_mtcnt_xstop;
 
+void vdg_mtcnt_freewheelm1()
+{
+	u1g_mtcnt_idstagem1 = ID_ALLOFF;
+	u2g_mtcnt_cntm1 = CNT_OUTOFF;
+}
+
+void vdg_mtcnt_freewheelm2()
+{
+	u1g_mtcnt_idstagem2 = ID_ALLOFF;
+	u2g_mtcnt_cntm2 = CNT_OUTOFF;
+}
+
 //モータ回転数のLPF処理
 void vdg_mtcnt_nmsmcal()
 {
@@ -381,44 +393,44 @@ void vdg_mtcnt_orthantjdg()
 {
 	//Motor1
 	//実Nm：正、目標-実：正　⇒正転力行
-	if((s4g_mtcnt_nmsm1>=0) && (s4g_rspicnt_nm1tgt-s4g_mtcnt_nmsm1>=0))
+	if((s4g_mtcnt_nmsm1>=0) && (s4g_rspicnt_nm1tgt>=0))
 	{
 		u1g_mtcnt_idorthantm1 = ID_MTRUN_FWDPWR;
 	}
 	//実Nm：正、目標-実：負　⇒正転回生
-	else if((s4g_mtcnt_nmsm1>=0) && (s4g_rspicnt_nm1tgt-s4g_mtcnt_nmsm1<0))
+	else if((s4g_mtcnt_nmsm1>0) && (s4g_rspicnt_nm1tgt<0))
 	{
 		u1g_mtcnt_idorthantm1 = ID_MTRUN_FWDREG;
 	}
 	//実Nm：負、目標-実：負　⇒逆転力行
-	else if((s4g_mtcnt_nmsm1<0) && (s4g_rspicnt_nm1tgt-s4g_mtcnt_nmsm1<=0))
+	else if((s4g_mtcnt_nmsm1<=0) && (s4g_rspicnt_nm1tgt<=0))
 	{
 		u1g_mtcnt_idorthantm1 = ID_MTRUN_REVPWR;
 	}
 	//実Nm：負、目標-実：正　⇒逆転回生
-	else	// if(s4g_mtcnt_nmsm1<0 && s4g_rspicnt_nm1tgt-s4g_mtcnt_nmsm1 > 0)
+	else if((s4g_mtcnt_nmsm1<0) && (s4g_rspicnt_nm1tgt>0))
 	{
 		u1g_mtcnt_idorthantm1 = ID_MTRUN_REVREG;
 	}
 
 	//Motor2
 	//実Nm：正、目標-実：正　⇒正転力行
-	if((s4g_mtcnt_nmsm2>=0) && (s4g_rspicnt_nm2tgt-s4g_mtcnt_nmsm2>=0))
+	if((s4g_mtcnt_nmsm2>=0) && (s4g_rspicnt_nm2tgt>=0))
 	{
 		u1g_mtcnt_idorthantm2 = ID_MTRUN_FWDPWR;
 	}
 	//実Nm：正、目標-実：負　⇒正転回生
-	else if((s4g_mtcnt_nmsm2>=0) && (s4g_rspicnt_nm2tgt-s4g_mtcnt_nmsm2<0))
+	else if((s4g_mtcnt_nmsm2>0) && (s4g_rspicnt_nm2tgt<0))
 	{
 		u1g_mtcnt_idorthantm2 = ID_MTRUN_FWDREG;
 	}
 	//実Nm：負、目標-実：負　⇒逆転力行
-	else if((s4g_mtcnt_nmsm2<0) && (s4g_rspicnt_nm2tgt-s4g_mtcnt_nmsm2<=0))
+	else if((s4g_mtcnt_nmsm2<=0) && (s4g_rspicnt_nm2tgt<=0))
 	{
 		u1g_mtcnt_idorthantm2 = ID_MTRUN_REVPWR;
 	}
 	//実Nm：負、目標-実：正　⇒逆転回生
-	else	// if(s4g_mtcnt_nmsm2<0 && s4g_rspicnt_nm2tgt-s4g_mtcnt_nmsm2 > 0)
+	else if((s4g_mtcnt_nmsm2<0) && (s4g_rspicnt_nm2tgt>0))
 	{
 		u1g_mtcnt_idorthantm2 = ID_MTRUN_REVREG;
 	}
@@ -450,7 +462,7 @@ void vdg_mtcnt_stagephasejdg()
 }
 
 
-//力行処理
+//力行処理：正転力行、逆転力行の時使用
 void vdg_mtcnt_tgrpwrcalm1()
 {
 	/***************static変数定義***************/
@@ -459,24 +471,30 @@ void vdg_mtcnt_tgrpwrcalm1()
 	volatile static float f4s_mtcnt_dutym1fbilim;
 	volatile static float f4s_mtcnt_dutym1;
 	volatile static unsigned long u4s_mtcnt_nm1diffabs;
+	volatile static signed long s4s_mtcnt_nm1diff;
 
 	/***************テンポラリ変数定義***************/
-	volatile unsigned short u2s_mtcnt_cntm1pre;
+	volatile unsigned short u2t_mtcnt_cntm1pre;
 
-
-	u4s_mtcnt_nm1diffabs = (unsigned long)(abs(s4g_rspicnt_nm1tgt - s4g_mtcnt_nmsm1));
+	//回転方向に応じてNm差分の符号処理
+	if (u1g_mtcnt_idorthantm1==ID_MTRUN_FWDPWR)
+	{
+		s4s_mtcnt_nm1diff = s4g_rspicnt_nm1tgt - s4g_mtcnt_nmsm1;
+	}
+	else 
+	{
+		s4s_mtcnt_nm1diff = s4g_mtcnt_nmsm1 - s4g_rspicnt_nm1tgt;
+	}
 
 	//FF項算出
-	/***モータ最大回転数/現在回転数×FF項用最大Duty***/
+	/***(現在回転数/モータ最大回転数)×FF項用最大Duty***/
 	f4s_mtcnt_dutym1ff = DUTY_MINFF + (DUTY_MAXFF - DUTY_MINFF) * (float)(s4g_mtcnt_nmsm1) / (float)(NM_MAX);
 
 	//FB項算出
-	f4s_mtcnt_dutym1fb = (float)(u4s_mtcnt_nm1diffabs) * KP_FB;
+	f4s_mtcnt_dutym1fb = (float)(s4s_mtcnt_nm1diff) * KP_FB;
 	//FB項上下限処理
-	if(f4s_mtcnt_dutym1fb >= DUTY_MAXFB)
-	{
-		f4s_mtcnt_dutym1fb = DUTY_MAXFB;
-	}
+	if(f4s_mtcnt_dutym1fb >= DUTY_MAXFB) { f4s_mtcnt_dutym1fb = DUTY_MAXFB; }
+	else if(f4s_mtcnt_dutym1fb <= DUTY_MINFB) { f4s_mtcnt_dutym1fb = DUTY_MINFB; }
 
 	//電流超過時FB項算出
 	if (f4g_current_imsm1 >= I_MAX)
@@ -504,8 +522,14 @@ void vdg_mtcnt_tgrpwrcalm1()
 	else if(f4s_mtcnt_dutym1 < DUTY_MIN) { f4s_mtcnt_dutym1 = DUTY_MIN; }
 
 	//カウント換算
-	u2s_mtcnt_cntm1pre = (unsigned short)((float)(CNT_CARRIER) * (1 - f4s_mtcnt_dutym1));
-	u2g_mtcnt_cntm1 = u2s_mtcnt_cntm1pre;
+	u2t_mtcnt_cntm1pre = (unsigned short)((float)(CNT_CARRIER) * (1 - f4s_mtcnt_dutym1));
+	u2g_mtcnt_cntm1 = u2t_mtcnt_cntm1pre;
+
+	//実が0rpm、目標がNM_STP以下の時はfreewheel状態にしておく
+	if((s4g_rspicnt_nm1tgt == 0) && (abs(s4g_mtcnt_nmsm1) <= NM_STP))
+	{
+		vdg_mtcnt_freewheelm1();
+	}
 }
 
 void vdg_mtcnt_tgrpwrcalm2()
@@ -521,19 +545,25 @@ void vdg_mtcnt_tgrpwrcalm2()
 	volatile unsigned short u2s_mtcnt_cntm2pre;
 
 
-	u4s_mtcnt_nm2diffabs = (unsigned long)(abs(s4g_rspicnt_nm2tgt - s4g_mtcnt_nmsm2));
+	//回転方向に応じてNm差分の符号処理
+	if (u1g_mtcnt_idorthantm2==ID_MTRUN_FWDPWR)
+	{
+		s4s_mtcnt_nm2diff = s4g_rspicnt_nm2tgt - s4g_mtcnt_nmsm2;
+	}
+	else 
+	{
+		s4s_mtcnt_nm2diff = s4g_mtcnt_nmsm2 - s4g_rspicnt_nm2tgt;
+	}
 
 	//FF項算出
-	/***モータ最大回転数/現在回転数×FF項用最大Duty***/
+	/***(現在回転数/モータ最大回転数)×FF項用最大Duty***/
 	f4s_mtcnt_dutym2ff = DUTY_MINFF + (DUTY_MAXFF - DUTY_MINFF) * (float)(s4g_mtcnt_nmsm2) / (float)(NM_MAX);
 
 	//FB項算出
-	f4s_mtcnt_dutym2fb = (float)(u4s_mtcnt_nm2diffabs) * KP_FB;
+	f4s_mtcnt_dutym2fb = (float)(s4s_mtcnt_nm2diff) * KP_FB;
 	//FB項上下限処理
-	if(f4s_mtcnt_dutym2fb >= DUTY_MAXFB)
-	{
-		f4s_mtcnt_dutym2fb = DUTY_MAXFB;
-	}
+	if(f4s_mtcnt_dutym2fb >= DUTY_MAXFB) { f4s_mtcnt_dutym2fb = DUTY_MAXFB; }
+	else if(f4s_mtcnt_dutym2fb <= DUTY_MINFB) { f4s_mtcnt_dutym2fb = DUTY_MINFB; }
 
 	//電流超過時FB項算出
 	if (f4g_current_imsm2 >= I_MAX)
@@ -563,6 +593,12 @@ void vdg_mtcnt_tgrpwrcalm2()
 	//カウント換算
 	u2s_mtcnt_cntm2pre = (unsigned short)((float)(CNT_CARRIER) * (1 - f4s_mtcnt_dutym2));
 	u2g_mtcnt_cntm2 = u2s_mtcnt_cntm2pre;
+
+	//実が0rpm、目標がNM_STP以下の時はfreewheel状態にしておく
+	if((s4g_rspicnt_nm2tgt == 0) && (abs(s4g_mtcnt_nmsm2) <= NM_STP))
+	{
+		vdg_mtcnt_freewheelm2();
+	}
 }
 
 //回生処理
@@ -576,7 +612,7 @@ void vdg_mtcnt_tgrregcalm1()
 	volatile static unsigned long u4s_mtcnt_nm1diffabs;
 
 	/***************テンポラリ変数定義***************/
-	volatile unsigned short u2s_mtcnt_cntm1pre;
+	volatile unsigned short u2t_mtcnt_cntm1pre;
 
 
 	u4s_mtcnt_nm1diffabs = (unsigned long)(abs(s4g_rspicnt_nm1tgt - s4g_mtcnt_nmsm1));
@@ -619,8 +655,8 @@ void vdg_mtcnt_tgrregcalm1()
 	else if(f4s_mtcnt_dutym1 < DUTY_MINREG) { f4s_mtcnt_dutym1 = DUTY_MINREG; }
 
 	//カウント換算
-	u2s_mtcnt_cntm1pre = (unsigned short)((float)(CNT_CARRIER) * (1 - f4s_mtcnt_dutym1));
-	u2g_mtcnt_cntm1 = u2s_mtcnt_cntm1pre;
+	u2t_mtcnt_cntm1pre = (unsigned short)((float)(CNT_CARRIER) * (1 - f4s_mtcnt_dutym1));
+	u2g_mtcnt_cntm1 = u2t_mtcnt_cntm1pre;
 }
 
 void vdg_mtcnt_tgrregcalm2()
@@ -680,29 +716,14 @@ void vdg_mtcnt_tgrregcalm2()
 	u2g_mtcnt_cntm2 = u2s_mtcnt_cntm2pre;
 }
 
-void vdg_mtcnt_freewheelm1()
-{
-	u1g_mtcnt_idstagem1 = ID_ALLOFF;
-	u2g_mtcnt_cntm1 = CNT_OUTOFF;
-}
-
-void vdg_mtcnt_freewheelm2()
-{
-	u1g_mtcnt_idstagem2 = ID_ALLOFF;
-	u2g_mtcnt_cntm2 = CNT_OUTOFF;
-}
-
 void vdg_mtcnt_mtorigin()
 {
 	/***************static変数定義***************/
-	// volatile static unsigned char u1s_mtcnt_cntoriginrot = 0;
-	// volatile static unsigned char u1s_mtcnt_idstage = 0;
 
 	/***************テンポラリ変数定義***************/
 	volatile unsigned char u1t_mtcnt_cntoriginrot = 0;
 	volatile unsigned char u1t_mtcnt_idstage = 0;
-	volatile unsigned long i = 0;
-	// volatile unsigned long u4t																																																								`qaq_mtcnt_spdrset;
+	volatile unsigned long i = 0;																																																						`qaq_mtcnt_spdrset;
 
 	// Jetsonに原点学習中であることを通知
 	vdg_rspicnt_sendset(ID_MODE_ORG);
@@ -727,21 +748,19 @@ void vdg_mtcnt_mtorigin()
 		}
 	}
 
-	//エンコーダ角度情報を保存するためにロータ位置を固定状態にしておく
+	//エンコーダ角度情報を保存するためにロータ位置を固定状態にしておいて
 	//エンコーダTCNTカウントを「カウンタ中点＋原点学習後角度分カウント」から始めるために書き込み
 	MTU_M1_ENCTCNT = TCNT_ENC_DEFAULT;
 	MTU_M2_ENCTCNT = TCNT_ENC_DEFAULT;
 
 	//原点学習処理しエンコーダカウント初期化完了後所定時間待ち
+	//※時間待ちがnopだとバグるため便宜上こうしているだけ。JetsonからのSPI通信周期のN回待ち
 	for(i=0; i<7; i++)
 	{
 		while(u1g_exspri0_xrspirec != 1);
 		u1g_exspri0_xrspirec = 0;
 		vdg_rspicnt_recget();
 	}
-
-	// u1g_mtcnt_idstagem1 = ID_STAGE2;		// stage1ホールド状態を60degのstage2として少し進角させておく
-	// u1g_mtcnt_idstagem2 = ID_STAGE2;
 
 	//エンコーダTCNTカウントを学習すればロータ位置ホールド不要のため出力OFFにしておく
 	vdg_mtcnt_freewheelm1();
@@ -751,5 +770,4 @@ void vdg_mtcnt_mtorigin()
 	u1g_mtcnt_idmode = ID_MODE_STP;
 	// 原点学習終了後は次周期で意図せぬ学習開始しないようにrq自体をSTPに遷移させておく
 	u1g_rspicnt_idmoderq = ID_MODE_STP;
-	// vdg_rspicnt_sendset(ID_MODE_STP);
 }
