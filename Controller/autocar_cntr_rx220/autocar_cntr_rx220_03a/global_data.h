@@ -6,7 +6,7 @@
 #define ENC_NTEETH 54		    	//ロータリエンコーダ歯数
 #define POLE_PAIRS 7			    //極対数
 #define V_PW 18		    		    //電源電圧
-#define NM_MAX 6000                 //モータ最大回転数
+#define NM_MAX 4000                 //モータ最大回転数
 
 /***汎用***/
 #define PI 3.14159265

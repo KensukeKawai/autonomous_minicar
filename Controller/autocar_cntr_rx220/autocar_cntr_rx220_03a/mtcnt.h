@@ -33,7 +33,7 @@ extern volatile unsigned char u1g_mtcnt_xmtorigin;
 extern volatile unsigned char u1g_mtcnt_xstop;
 
 /***************マクロ定義**************/
-#define LPF_CUTF_NM ((float)(5))    //モータ回転数の1次LPFフィルタカットオフ周波数
+#define LPF_CUTF_NM ((float)(3))    //モータ回転数の1次LPFフィルタカットオフ周波数
 #define LPF_TAU_NM ((float)(1/(2*PI*LPF_CUTF_NM)))  //モータ回転数の1次LPFフィルタ時定数
 #define LPF_A ((float)(T_CARRIER+2*LPF_TAU_NM))      //離散LPF係数
 #define LPF_B ((float)(T_CARRIER-2*LPF_TAU_NM))      //離散LPF係数
@@ -60,9 +60,10 @@ extern volatile unsigned char u1g_mtcnt_xstop;
 #define ID_MT_ADV 1
 #define ID_MT_BACK 2
 
-/***回転数FB項パラメータ***/
-#define KP_FB ((float)(0.0005))              //Pゲイン
-#define KI_FB ((float)(0.00001))            //Iゲイン。今は未使用。
+/***回転数制御パラメータ***/
+#define KP_FF ((float)(0.5))                //「KP_FF×nmtgt/NMAX×（DUTY_MAXFF-DUTY_MINFF)」
+#define KP_FB ((float)(0.0004))              //Pゲイン
+#define KI_FB ((float)(0.00005))            //Iゲイン。今は未使用。
 
 /*****電流制限*****/
 #define I_MAX ((float)(2))                //力行時の電流制限値
@@ -75,11 +76,14 @@ extern volatile unsigned char u1g_mtcnt_xstop;
 /***Duty設定***/
 //力行時パラメータ
 #define DUTY_MIN ((float)(0.02))            //力行時の下限Duty
-#define DUTY_MAX ((float)(0.3))             //力行時の上限Duty
-#define DUTY_MINFF ((float)(DUTY_MIN+0))          //FF項のオフセットDuty。目標回転数によらず最低限確保するDuty
-#define DUTY_MAXFF ((float)(0.1))           //FF項の最大Duty
+#define DUTY_MAX ((float)(0.4))             //力行時の上限Duty
+//車重によって変える必要あり//
+#define DUTY_MINFF ((float)(DUTY_MIN+0.015))          //FF項のオフセットDuty。目標回転数によらず最低限確保するDuty
+#define DUTY_MAXFF ((float)(0.2))           //FF項の最大Duty
 #define DUTY_MAXFB ((float)(DUTY_MAX-DUTY_MAXFF))           //FB項の最大Duty
 #define DUTY_MINFB ((float)(-1 * DUTY_MAXFB))           //FB項の最小Duty
+#define DUTY_MAXFBI ((float)(0.05))                 //積分項の上限ガード
+#define DUTY_MINFBI ((float)(-1 * DUTY_MAXFBI))                 //積分項の下限ガード
 #define DUTY_MINILIM ((float)(-1 * DUTY_MAX))        //電流制限FB項の最大Duty。基本DUTY_MAXの符号反転。
 //回生時パラメータ
 #define DUTY_MINREG ((float)(0.02))         //回生時の下限Duty

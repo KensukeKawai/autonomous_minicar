@@ -468,6 +468,8 @@ void vdg_mtcnt_tgrpwrcalm1()
 	/***************static変数定義***************/
 	volatile static float f4s_mtcnt_dutym1ff;
 	volatile static float f4s_mtcnt_dutym1fb;
+	volatile static float f4s_mtcnt_dutym1fbp;
+	volatile static float f4s_mtcnt_dutym1fbi = 0;
 	volatile static float f4s_mtcnt_dutym1fbilim;
 	volatile static float f4s_mtcnt_dutym1;
 	volatile static signed long s4s_mtcnt_nm1diff;
@@ -486,11 +488,21 @@ void vdg_mtcnt_tgrpwrcalm1()
 	}
 
 	//FF項算出
-	/***(現在回転数/モータ最大回転数)×FF項用最大Duty***/
-	f4s_mtcnt_dutym1ff = DUTY_MINFF + (DUTY_MAXFF - DUTY_MINFF) * (float)(s4g_mtcnt_nmsm1) / (float)(NM_MAX);
+	/***(目標回転数/モータ最大回転数)×FF項用最大Duty***/
+	f4s_mtcnt_dutym1ff = DUTY_MINFF + KP_FF * (DUTY_MAXFF - DUTY_MINFF) * (float)(s4g_rspicnt_nm1tgt) / (float)(NM_MAX);
 
 	//FB項算出
-	f4s_mtcnt_dutym1fb = (float)(s4s_mtcnt_nm1diff) * KP_FB;
+	f4s_mtcnt_dutym1fbp = (float)(s4s_mtcnt_nm1diff) * KP_FB;
+	f4s_mtcnt_dutym1fbi = f4s_mtcnt_dutym1fbi + (float)(s4s_mtcnt_nm1diff) * KI_FB;
+	
+	//I項上下限処理しアンチワインドアップ
+	if(f4s_mtcnt_dutym1fbi >= DUTY_MAXFBI) { f4s_mtcnt_dutym1fbi = DUTY_MAXFBI; }
+	else if(f4s_mtcnt_dutym1fbi <= DUTY_MINFBI) { f4s_mtcnt_dutym1fbi = DUTY_MINFBI; }
+	//目標回転数が0rpmの時は積算をリセットしておく
+	if(s4g_rspicnt_nm1tgt == 0) { f4s_mtcnt_dutym1fbi = 0;}
+
+	f4s_mtcnt_dutym1fb = f4s_mtcnt_dutym1fbp + f4s_mtcnt_dutym1fbi;
+
 	//FB項上下限処理
 	if(f4s_mtcnt_dutym1fb >= DUTY_MAXFB) { f4s_mtcnt_dutym1fb = DUTY_MAXFB; }
 	else if(f4s_mtcnt_dutym1fb <= DUTY_MINFB) { f4s_mtcnt_dutym1fb = DUTY_MINFB; }
@@ -514,7 +526,7 @@ void vdg_mtcnt_tgrpwrcalm1()
 	}
 
 	//Duty合算
-	f4s_mtcnt_dutym1 = f4s_mtcnt_dutym1ff + f4s_mtcnt_dutym1fb + f4s_mtcnt_dutym1fbilim;
+	f4s_mtcnt_dutym1 = f4s_mtcnt_dutym1ff + f4s_mtcnt_dutym1fbp + f4s_mtcnt_dutym1fbilim;
 
 	//Dutyの上下限ガード。ポカヨケ
 	if(f4s_mtcnt_dutym1 > DUTY_MAX) { f4s_mtcnt_dutym1 = DUTY_MAX; }
@@ -605,7 +617,7 @@ void vdg_mtcnt_tgrregcalm1()
 {
 	/***************static変数定義***************/
 	volatile static float f4s_mtcnt_dutym1ff;
-	volatile static float f4s_mtcnt_dutym1fb;
+	volatile static float f4s_mtcnt_dutym1fbp;
 	volatile static float f4s_mtcnt_dutym1fbilim;
 	volatile static float f4s_mtcnt_dutym1;
 	volatile static unsigned long u4s_mtcnt_nm1diffabs;
@@ -621,11 +633,11 @@ void vdg_mtcnt_tgrregcalm1()
 	f4s_mtcnt_dutym1ff = DUTY_MINFFREG + (DUTY_MAXFFREG - DUTY_MINFFREG) * (float)(s4g_mtcnt_nmsm1) / (float)(NM_MAX);
 
 	//FB項算出
-	f4s_mtcnt_dutym1fb = (float)(u4s_mtcnt_nm1diffabs) * KP_FB;
+	f4s_mtcnt_dutym1fbp = (float)(u4s_mtcnt_nm1diffabs) * KP_FB;
 	//FB項上下限処理
-	if(f4s_mtcnt_dutym1fb >= DUTY_MAXFBREG)
+	if(f4s_mtcnt_dutym1fbp >= DUTY_MAXFBREG)
 	{
-		f4s_mtcnt_dutym1fb = DUTY_MAXFBREG;
+		f4s_mtcnt_dutym1fbp = DUTY_MAXFBREG;
 	}
 
 	//電流超過時FB項算出
@@ -647,7 +659,7 @@ void vdg_mtcnt_tgrregcalm1()
 	}
 
 	//Duty合算
-	f4s_mtcnt_dutym1 = f4s_mtcnt_dutym1ff + f4s_mtcnt_dutym1fb + f4s_mtcnt_dutym1fbilim;
+	f4s_mtcnt_dutym1 = f4s_mtcnt_dutym1ff + f4s_mtcnt_dutym1fbp + f4s_mtcnt_dutym1fbilim;
 
 	//Dutyの上下限ガード。ポカヨケ
 	if(f4s_mtcnt_dutym1 > DUTY_MAXREG) { f4s_mtcnt_dutym1 = DUTY_MAXREG; }
