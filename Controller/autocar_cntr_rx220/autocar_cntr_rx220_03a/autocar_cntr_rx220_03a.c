@@ -17,7 +17,7 @@ void initialize()
 	vdg_S12AD_init();
 	vdg_SCI_init();		// PCとシリアル通信したい場合は使う
 	vdg_SPI_init();
-	// vdg_IRQ_init();		// フォトインタラプタ等で外部割込みしたい場合は使う
+	// vdg_IRQ_init();		// フォトインタラプタ等で外部割込みしたい場合は使う  
 	vdg_IPR_init();
 
 	// 外部モジュールの初期化
