@@ -63,7 +63,7 @@ extern volatile unsigned char u1g_mtcnt_xstop;
 /***回転数制御パラメータ***/
 #define KP_FF ((float)(0.5))                //「KP_FF×nmtgt/NMAX×（DUTY_MAXFF-DUTY_MINFF)」
 #define KP_FB ((float)(0.0004))              //Pゲイン
-#define KI_FB ((float)(0.00005))            //Iゲイン。今は未使用。
+#define KI_FB ((float)(0.00005))            //Iゲイン
 
 /*****電流制限*****/
 #define I_MAX ((float)(2))                //力行時の電流制限値
