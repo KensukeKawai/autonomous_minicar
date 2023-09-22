@@ -98,6 +98,7 @@ def cont_actuator():
 
     # 指定ID、nmtgtを送信
     g.nmact_fl, g.nmact_fr = spi_front.sendrec(g.nmtgt_l,g.nmtgt_r,g.id_fmotreq)
+    g.nmact_rl, g.nmact_rr = spi_rear.sendrec(g.nmtgt_l,g.nmtgt_r,g.id_rmotreq)
     print(g.id_fmotreq,g.id_fmot,g.nmtgt_l,g.nmact_fl)
 
     # 次周期に向けたnmtgt算出処理
