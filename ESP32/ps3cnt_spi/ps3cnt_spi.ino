@@ -1,32 +1,81 @@
 #include <Ps3Controller.h>
 #include <SPI.h>
 
+/***************Macro***************/
+// Controller
+#define ID_MODE_STP 1
+#define ID_MODE_RUN 2
+#define ID_MODE_ORG 3
+#define ID_MODE_RUNTOSTP 4
+#define ID_MODE_RECONLY 15    // 0xF0
+
+// Communication with Motor Controller
+#define SPI_SS_FRONT 16
+#define SPI_SS_REAR 17
+#define SPI_CLK_SET 200000
+#define BITMASK_MODE_STP (ID_MODE_STP<<28)
+#define BITMASK_MODE_RUN (ID_MODE_RUN<<28)
+#define BITMASK_MODE_ORG (ID_MODE_ORG<<28)
+#define BITMASK_MODE_RUNTOSTP (ID_MODE_RUNTOSTP<<28)
+#define BITMASK_ROTDIR (1<<13)
+#define BITMASK_NMTGT 0x1FFF
+#define BITMASK_MODE 0xF0000000
+#define BITMASK_BYTE 0xFF
+#define BITSHIFT_NM2 14
+#define BITSHIFT_MODE 28
+
+// Timer
+#define TIMER_MS 50
+
+
+/***************Global Variable***************/
+// Controller
+volatile uint8_t u1g_cntr_xcircle;
+volatile uint8_t u1g_cntr_xcross;
+volatile uint8_t u1g_cntr_xtriangle;
+volatile uint8_t u1g_cntr_idmoderq = ID_MODE_STP;
+volatile uint8_t u1g_cntr_idmoderqz = ID_MODE_STP;
+volatile uint8_t u1g_cntr_idmodetgt = ID_MODE_STP;
+
+// Motor Receive
+uint32_t u4g_mtrec_fmtdata;
+uint32_t u4g_mtrec_rmtdata;
+uint8_t u1g_mtrec_fmtid;
+uint8_t u1g_mtrec_rmtid;
+
+// Motor Send
+uint32_t u4g_mtsend_fmtdata;
+uint32_t u4g_mtsend_rmtdata;
+volatile uint8_t u1g_mtsend_idfmtset;
+volatile uint8_t u1g_mtsend_idrmtset;
+
+// Jetson Receive
+
+// Jetson Send
+
+
+
+// Communication with Motor Controller
+uint32_t u4g_spi_fmtsend;
+uint32_t u4g_spi_rmtsend;
+SPIClass * vspi = NULL;                 //uninitalised pointers to SPI objects
+
+// Timer
+hw_timer_t * timer = NULL;
+
 // Debug LED
 #define LED_PIN 15
 
-/*↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓Controller Method↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓*/
-
-/*****Macro*****/
-#define ID_MODE_STOP 1
-#define ID_MODE_NORMAL 2
-#define ID_MODE_ORG 3
-#define ID_MODE_RUNTOSTP 4
-
-/*****Global Variable*****/
-volatile unsigned char u1g_event_xcircle;
-volatile unsigned char u1g_event_xcross;
-volatile unsigned char u1g_event_xtriangle;
-volatile unsigned char u1g_event_idmode = ID_MODE_STOP;
-
-void controller_get()
+/*↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓ Controller ↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓*/
+void vdg_controller_get()
 {
   if ( Ps3.event.button_down.start )  { Serial.write(255); }
-  if ( Ps3.event.button_down.circle ) { u1g_event_idmode = ID_MODE_NORMAL; }
-  if ( Ps3.event.button_down.cross ) { u1g_event_idmode = ID_MODE_STOP; }
-  if ( Ps3.event.button_down.triangle ) { u1g_event_idmode = ID_MODE_ORG; }
+  if ( Ps3.event.button_down.circle ) { u1g_cntr_idmoderq = ID_MODE_RUN; }
+  if ( Ps3.event.button_down.cross ) { u1g_cntr_idmoderq = ID_MODE_STP; }
+  if ( Ps3.event.button_down.triangle ) { u1g_cntr_idmoderq = ID_MODE_ORG; }
 }
 
-void controller_battery()
+void vdg_controller_battery()
 {
   switch ( Ps3.data.status.battery )
   {
@@ -45,70 +94,210 @@ void controller_battery()
   }
 }
 
-/*↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑Controller Method↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑*/
-
-/*↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓SPI Method↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓*/
-
-/*****Macro*****/
-#define SPI_SS_M1 16
-#define SPI_SS_M2 17
-#define SPI_CLK_SET 200000
-#define BITMASK_MODE_STP (ID_MODE_STOP<<28)
-#define BITMASK_MODE_RUN (ID_MODE_NORMAL<<28)
-#define BITMASK_MODE_ORG (ID_MODE_ORG<<28)
-#define BITMASK_MODE_RUNTOSTP (ID_MODE_RUNTOSTP<<28)
-#define BITMASK_ROTDIR (1<<13)
-#define BITMASK_NMTGT 0x1FFF
-#define BITMASK_MODE 0xF0000000
-#define BITMASK_BYTE 0xFF
-#define BITSHIFT_NM2 14
-#define BITSHIFT_MODE 28
-
-/*****Global Variable*****/
-uint32_t senddata = 123456789;
-uint32_t recdata;
-SPIClass * vspi = NULL;                 //uninitalised pointers to SPI objects
-
-void spicommand(SPIClass *spi, uint32_t data)
+void vdg_controller_jetsonsend()
 {
-  digitalWrite(SPI_SS_M1, LOW);    //Pull SS low
-  recdata = spi->transfer32(data);
-  digitalWrite(SPI_SS_M1, HIGH);   //Pull SS high
+  Serial.write(Ps3.data.analog.stick.ly+128);
+  Serial.write(Ps3.data.analog.stick.rx+128);
+}
+/*↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑ Controller ↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑*/
+
+/*↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓ Motor ↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓*/
+
+void vdg_mtcnt_sendrec()
+{
+  uint32_t u4t_mtrec_fmtdata;
+  uint32_t u4t_mtrec_rmtdata;
+
+  /*****SPI Communication to Motor Controller*****/
+  //Front
+  digitalWrite(SPI_SS_FRONT, LOW);    //Pull SS low
+  u4g_mtrec_fmtdata = vspi->transfer32(u4g_mtsend_fmtdata);
+  digitalWrite(SPI_SS_FRONT, HIGH);   //Pull SS high
+
+  //Rear
+  digitalWrite(SPI_SS_REAR, LOW);    //Pull SS low
+  u4g_mtrec_rmtdata = vspi->transfer32(u4g_mtsend_rmtdata);
+  digitalWrite(SPI_SS_REAR, HIGH);   //Pull SS high
+
+  u4t_mtrec_fmtdata = u4g_mtrec_fmtdata;
+  u4t_mtrec_rmtdata = u4g_mtrec_rmtdata;
+  u1g_mtrec_fmtid = (uint8_t)(u4t_mtrec_fmtdata >> BITSHIFT_MODE);
+  u1g_mtrec_rmtid = (uint8_t)(u4t_mtrec_rmtdata >> BITSHIFT_MODE);
 }
 
-/*↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑SPI Method↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑*/
+void vdg_mtcnt_reconly()
+{
+  uint32_t u4t_mtrec_fmtdata;
+  uint32_t u4t_mtrec_rmtdata;
 
-/*↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓Timer Method↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓*/
+  //Front
+  digitalWrite(SPI_SS_FRONT, LOW);    //Pull SS low
+  u4g_mtrec_fmtdata = vspi->transfer32(ID_MODE_RECONLY << BITSHIFT_MODE);
+  digitalWrite(SPI_SS_FRONT, HIGH);   //Pull SS high
 
-/*****Macro*****/
-#define TIMER_MS 50
+  //Rear
+  digitalWrite(SPI_SS_REAR, LOW);    //Pull SS low
+  u4g_mtrec_rmtdata = vspi->transfer32(ID_MODE_RECONLY << BITSHIFT_MODE);
+  digitalWrite(SPI_SS_REAR, HIGH);   //Pull SS high
 
-/*****Global Variable*****/
-hw_timer_t * timer = NULL;
+  u4t_mtrec_fmtdata = u4g_mtrec_fmtdata;
+  u4t_mtrec_rmtdata = u4g_mtrec_rmtdata;
+  u1g_mtrec_fmtid = (uint8_t)(u4t_mtrec_fmtdata >> BITSHIFT_MODE);
+  u1g_mtrec_rmtid = (uint8_t)(u4t_mtrec_rmtdata >> BITSHIFT_MODE);
+}
 
-void IRAM_ATTR onTimer() {
+void vdg_mtcnt_idjdg()
+{
+  // 原点学習トリガ処理
+  if (u1g_cntr_idmoderqz == ID_MODE_ORG && u1g_cntr_idmoderq == ID_MODE_ORG)
+  {
+    u1g_cntr_idmodetgt = ID_MODE_STP;
+  }
+  else
+  {
+    u1g_cntr_idmodetgt = u1g_cntr_idmoderq;
+  }
+  u1g_cntr_idmoderqz = u1g_cntr_idmoderq;  // コントローラ要求の前回値処理
+
+  switch (u1g_mtrec_fmtid)
+  {
+    case ID_MODE_STP:
+      u1g_mtsend_idfmtset = u1g_cntr_idmodetgt;
+    break;
+
+    case ID_MODE_RUN:
+      if (u1g_cntr_idmodetgt == ID_MODE_ORG) { u1g_mtsend_idfmtset = ID_MODE_RUN; }
+      else { u1g_mtsend_idfmtset = u1g_cntr_idmodetgt; }
+    break;
+
+    case ID_MODE_ORG:
+      u1g_mtsend_idfmtset = ID_MODE_ORG;
+    break;
+
+    case ID_MODE_RUNTOSTP:
+      u1g_mtsend_idfmtset = ID_MODE_STP;
+    break;
+
+    default:
+      u1g_mtsend_idfmtset = ID_MODE_STP;
+  }
+
+  switch (u1g_mtrec_rmtid)
+  {
+    case ID_MODE_STP:
+      u1g_mtsend_idrmtset = u1g_cntr_idmodetgt;
+    break;
+
+    case ID_MODE_RUN:
+      if (u1g_cntr_idmodetgt == ID_MODE_ORG) { u1g_mtsend_idrmtset = ID_MODE_RUN; }
+      else { u1g_mtsend_idrmtset = u1g_cntr_idmodetgt; }
+    break;
+
+    case ID_MODE_ORG:
+      u1g_mtsend_idrmtset = ID_MODE_ORG;
+    break;
+
+    case ID_MODE_RUNTOSTP:
+      u1g_mtsend_idrmtset = ID_MODE_STP;
+    break;
+
+    default:
+      u1g_mtsend_idrmtset = ID_MODE_STP;
+  }
+}
+
+/*↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑ Motor ↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑*/
+
+/*↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓ Communication with Jetson ↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓*/
+
+void vdg_jetson_serialsend()
+{
+  uint8_t u1t_jetson_fmtdatab0;
+  uint8_t u1t_jetson_fmtdatab1;
+  uint8_t u1t_jetson_fmtdatab2;
+  uint8_t u1t_jetson_fmtdatab3;
+  uint8_t u1t_jetson_rmtdatab0;
+  uint8_t u1t_jetson_rmtdatab1;
+  uint8_t u1t_jetson_rmtdatab2;
+  uint8_t u1t_jetson_rmtdatab3;
+  uint32_t u4t_jetson_fmtdata;
+  uint32_t u4t_jetson_rmtdata;
+
+  u4t_jetson_fmtdata = u4g_mtrec_fmtdata;
+  u4t_jetson_rmtdata = u4g_mtrec_rmtdata;
+
+  // b0:LSB、b3:MSB
+  // Front Motor data
+  u1t_jetson_fmtdatab0 = (uint8_t)((u4t_jetson_fmtdata & 0x000000FF) >> 0);
+  u1t_jetson_fmtdatab1 = (uint8_t)((u4t_jetson_fmtdata & 0x0000FF00) >> 8);
+  u1t_jetson_fmtdatab2 = (uint8_t)((u4t_jetson_fmtdata & 0x00FF0000) >> 16);
+  u1t_jetson_fmtdatab3 = (uint8_t)((u4t_jetson_fmtdata & 0x0F000000) >> 24);
+  u1t_jetson_fmtdatab3 = u1t_jetson_fmtdatab3 | u1g_mtsend_idfmtset;
+  // Rear Motor data
+  u1t_jetson_rmtdatab0 = (uint8_t)((u4t_jetson_rmtdata & 0x000000FF) >> 0);
+  u1t_jetson_rmtdatab1 = (uint8_t)((u4t_jetson_rmtdata & 0x0000FF00) >> 8);
+  u1t_jetson_rmtdatab2 = (uint8_t)((u4t_jetson_rmtdata & 0x00FF0000) >> 16);
+  u1t_jetson_rmtdatab3 = (uint8_t)((u4t_jetson_rmtdata & 0x0F000000) >> 24);
+  u1t_jetson_rmtdatab3 = u1t_jetson_rmtdatab3 | u1g_mtsend_idrmtset;
+
+  Serial.write(u1t_jetson_fmtdatab0);
+  Serial.write(u1t_jetson_fmtdatab1);
+  Serial.write(u1t_jetson_fmtdatab2);
+  Serial.write(u1t_jetson_fmtdatab3);
+  Serial.write(u1t_jetson_rmtdatab0);
+  Serial.write(u1t_jetson_rmtdatab1);
+  Serial.write(u1t_jetson_rmtdatab2);
+  Serial.write(u1t_jetson_rmtdatab3);
+}
+
+/*↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑ Communication with Jetson ↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑*/
+
+
+/*↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓ Steering Servo Control ↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓*/
+
+
+/*↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑ Steering Servo Control ↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑*/
+
+
+/*↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓ Timer ↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓*/
+void IRAM_ATTR onTimer()               // Timer Interrupt
+{
   digitalWrite(LED_PIN, !digitalRead(LED_PIN));
+
+  while(Ps3.isConnected())
+  {
+    while(Serial.available())
+    {
+      // vdg_mtcnt_sendrec();         // 本当はここで前回値のJetsonからのデータをモータに送信したい
+      vdg_mtcnt_reconly();
+      vdg_mtcnt_idjdg();              // コントローラ要求とモータ状態から要求ID判定
+      vdg_controller_jetsonsend();    // 前後左右操舵情報
+      vdg_jetson_serialsend();        // フロント/リアモータ回転数、状態情報
+      vdg_controller_battery();       // コントローラバッテリ残量表示
+      // Serial.println(recdata);
+    }
+  }
 }
-/*↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑Timer Method↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑*/
+/*↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑ Timer ↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑*/
 
 void setup()
 {
+  Serial.begin(115200);                  // Prepare to Serial Communication
+  while (!Serial);                       // waiting for serial Comm preparation
+  Serial.println("プログラム開始");       // シリアル通信でメッセージをPCに送信
+
   /*****Controller*****/
-  Serial.begin(115200);
-  while (!Serial);                  // 準備が終わるのを待つ
-  Ps3.attach(autocar_cntget);
+  Ps3.attach(vdg_controller_get);       // ボタン入力イベント発生時の割り込み処理設定
   Ps3.begin("FC:F5:C4:45:75:8E");
 
   /*****SPI*****/
   vspi = new SPIClass(VSPI);            //インスタンス生成
-  vspi->begin();                      //生成したvspiインスタンスのポインタからbegin()関数コール(ポインタからメソッドコール時は「->」)
-  pinMode(SPI_SS_M1, OUTPUT);   //vspiインスタンスのSSを任意ポート指定し出力設定
+  vspi->begin();                        //生成したvspiインスタンスのポインタからbegin()関数コール(ポインタからメソッドコール時は「->」)
+  pinMode(SPI_SS_FRONT, OUTPUT);        //vspiインスタンスのSSを任意ポート指定し出力設定
+  pinMode(SPI_SS_REAR, OUTPUT);         //vspiインスタンスのSSを任意ポート指定し出力設定
   vspi->beginTransaction(SPISettings(SPI_CLK_SET, SPI_MSBFIRST, SPI_MODE0));
 
-  // Serial Monitor用Serial API設定
-  // Serial.begin(115200);             // シリアル通信の準備をする
-  // while (!Serial);                  // 準備が終わるのを待つ
-  Serial.println("プログラム開始");    // シリアル通信でメッセージをPCに送信
+  /*****Servo PWM*****/
 
   /*****Timer*****/
   pinMode(LED_PIN, OUTPUT);
@@ -118,28 +307,4 @@ void setup()
   timerAlarmEnable(timer);
 }
 
-void loop()
-{
-  /*****SPI Communication*****/
-  spicommand(vspi, senddata);
-  Serial.println(recdata);
-
-  // while(Ps3.isConnected())
-  // {
-  //   while(1)
-  //   {
-  //     while(Serial.available())
-  //     {
-  //       /*****SPI Communication*****/
-  //       spicommand(vspi, senddata);
-  //       Serial.println(recdata);
-      
-  //       /*****Controller*****/
-  //       Serial.write(Ps3.data.analog.stick.ly+128);
-  //       Serial.write(Ps3.data.analog.stick.rx+128);
-  //       Serial.write(u1g_event_idmode);
-          //  controller_battery
-  //     }
-  //   }
-  // }
-}
+void loop(){}
