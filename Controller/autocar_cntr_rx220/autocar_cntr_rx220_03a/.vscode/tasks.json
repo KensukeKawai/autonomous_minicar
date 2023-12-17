@@ -17,7 +17,7 @@
             }
         },
         {
-            "label": "Flash_RX220_A",
+            "label": "Flash_RX220_A_Laptop",
             "type": "shell",
             "command": "C:\\Program Files (x86)\\Renesas Electronics\\Programming Tools\\Renesas Flash Programmer V3.06\\RFPV3.Console.exe",
             "args": [
@@ -26,9 +26,26 @@
             "problemMatcher": []
         },
         {
-            "label": "Flash_RX220_D",
+            "label": "Flash_RX220_D_Laptop",
             "type": "shell",
             "command": "C:\\Program Files (x86)\\Renesas Electronics\\Programming Tools\\Renesas Flash Programmer V3.06\\RFPV3.Console.exe",
+            "args": [
+                "D:\\Product\\Renesas\\RX220_flash_rpj\\RX220_D\\RX220_D.rpj"
+            ]
+        },
+        {
+            "label": "Flash_RX220_A_Desktop",
+            "type": "shell",
+            "command": "C:\\Program Files (x86)\\Renesas Electronics\\Programming Tools\\Renesas Flash Programmer V3.11\\RFPV3.Console.exe",
+            "args": [
+                "D:\\Product\\Renesas\\RX220_flash_rpj\\RX220_A\\RX220_A.rpj"
+            ],
+            "problemMatcher": []
+        },
+        {
+            "label": "Flash_RX220_D_Desktop",
+            "type": "shell",
+            "command": "C:\\Program Files (x86)\\Renesas Electronics\\Programming Tools\\Renesas Flash Programmer V3.11\\RFPV3.Console.exe",
             "args": [
                 "D:\\Product\\Renesas\\RX220_flash_rpj\\RX220_D\\RX220_D.rpj"
             ]

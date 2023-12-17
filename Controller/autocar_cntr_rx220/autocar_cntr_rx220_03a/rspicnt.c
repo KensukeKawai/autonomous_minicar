@@ -124,3 +124,20 @@ void vdg_rspicnt_sendset(unsigned char mode)
 
     RSPI0.SPDR.LONG = u4t_rspicnt_spdrset;
 }
+
+void vdg_rspicnt_debug()
+{
+    /**********テンポラリ変数定義**********/
+    volatile unsigned long u4t_rspicnt_spdrrec;
+
+    while(1)
+    {
+        //SPI受信判定
+		if(u1g_exspri0_xrspirec == 1)
+		{
+			u1g_exspri0_xrspirec = 0;
+            u4t_rspicnt_spdrrec = RSPI0.SPDR.LONG;      //Long Wordで受信データ取得し処理
+            RSPI0.SPDR.LONG = u4t_rspicnt_spdrrec;      //受信データをそのまま送信
+		}
+    }
+}

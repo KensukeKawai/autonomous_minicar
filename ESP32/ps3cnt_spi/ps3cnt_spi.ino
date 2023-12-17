@@ -99,7 +99,7 @@ void vdg_controller_battery()
   }
 }
 
-void vdg_controller_serialsend()
+void vdg_jetson_sendstr()
 {
   Serial.write(Ps3.data.analog.stick.ly+128);
   Serial.write(Ps3.data.analog.stick.rx+128);
@@ -133,6 +133,20 @@ void vdg_mtcnt_sendrec()
   u4t_mtrec_rmtdata = u4g_mtrec_rmtdata;
   u1g_mtrec_fmtid = (uint8_t)(u4t_mtrec_fmtdata >> BITSHIFT_MODE);
   u1g_mtrec_rmtid = (uint8_t)(u4t_mtrec_rmtdata >> BITSHIFT_MODE);
+}
+
+void vdg_mtcnt_sendrec_dbg()
+{
+  static uint32_t u4s_mtsend_fmtdata;
+  static uint32_t u4s_mtrec_fmtdata;
+
+  u4s_mtsend_fmtdata = u4s_mtrec_fmtdata + 1;
+
+  /*****SPI Communication to Motor Controller*****/
+  //Front
+  digitalWrite(SPI_SS_FRONT, LOW);    //Pull SS low
+  u4s_mtrec_fmtdata = vspi->transfer32(u4s_mtsend_fmtdata);
+  digitalWrite(SPI_SS_FRONT, HIGH);   //Pull SS high
 }
 
 void vdg_mtcnt_reconly()
@@ -247,7 +261,7 @@ void vdg_jetson_rectgt()
   u4g_jetson_rmttgt = u4t_jetson_rmtrecb0 | (u4t_jetson_rmtrecb1 << 8) | (u4t_jetson_rmtrecb2 << 16) | (u4t_jetson_rmtrecb3 << 24);
 }
 
-void vdg_jetson_serialsend()
+void vdg_jetson_sendmtsts()
 {
   uint8_t u1t_jetson_fmtdatab0;
   uint8_t u1t_jetson_fmtdatab1;
@@ -304,13 +318,13 @@ void IRAM_ATTR onTimer()               // Timer Interrupt
   while(Ps3.isConnected())
   {
      // Jetsonからシリアル受信したデータバイト数が所定値(8Byte)に達した場合、Jetsonからの目標を更新
-    if(Serial.available() == INCOMING_BYTE) { vdg_jetson_rectgt(); }
-    vdg_mtcnt_sendrec();           //モータコントローラとSPI通信
-    // vdg_mtcnt_reconly();
-    vdg_mtcnt_idjdg();              // コントローラ要求とモータ状態から要求ID判定
-    vdg_controller_serialsend();    // 前後左右操舵情報をJetsonに送信
-    vdg_jetson_serialsend();        // フロント/リアモータ回転数、状態情報をJetsonに送信
-    vdg_controller_battery();       // コントローラバッテリ残量表示
+    // if(Serial.available() == INCOMING_BYTE) { vdg_jetson_rectgt(); }
+    // vdg_mtcnt_sendrec();           //モータコントローラとSPI通信
+    vdg_mtcnt_sendrec_dbg();
+    // vdg_mtcnt_idjdg();              // コントローラ要求とモータ状態から要求ID判定
+    // vdg_jetson_sendstr();    // 前後左右操舵情報をJetsonに送信
+    // vdg_jetson_sendmtsts();        // フロント/リアモータ回転数、状態情報をJetsonに送信
+    // vdg_controller_battery();       // コントローラバッテリ残量表示
     // Serial.println(recdata);
   }
 }
