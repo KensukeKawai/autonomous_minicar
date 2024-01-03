@@ -41,7 +41,7 @@ void main()
 {
 	initialize();
 
-	vdg_rspicnt_debug();						//SPI通信デバッグ時有効
+	// vdg_rspicnt_debug();						//SPI通信デバッグ時有効
 
 	MTU.TSTR.BYTE = 0xC7;									//MTU0,1,2,3,4のTCNTカウント開始
 	vdg_mtcnt_outset(ID_MOTOR1, ID_ALLOFF, CNT_OUTOFF);		//モータ1の出力全OFF、カウントOFF

@@ -28,10 +28,18 @@
 #define INCOMING_BYTE 8     // Jetsonからのシリアル通信データバイト数(1モータ4Byte×2=8Byte)
 
 // Timer
-#define TIMER_MS 50
+#define TIMER_MS 100
 
+// Serial
+#define SERIAL_BAUDRATE 115200
+
+// Debug LED
+#define LED_PIN 22
 
 /***************Global Variable***************/
+// Main
+volatile uint8_t u1g_main_xtimer;
+
 // Controller
 volatile uint8_t u1g_cntr_xcircle;
 volatile uint8_t u1g_cntr_xcross;
@@ -68,9 +76,6 @@ SPIClass * vspi = NULL;                 //uninitalised pointers to SPI objects
 // Timer
 hw_timer_t * timer = NULL;
 
-// Debug LED
-#define LED_PIN 15
-
 /*↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓ Controller ↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓*/
 void vdg_controller_get()
 {
@@ -97,12 +102,6 @@ void vdg_controller_battery()
     Ps3.setPlayer(1);
     break;
   }
-}
-
-void vdg_jetson_sendstr()
-{
-  Serial.write(Ps3.data.analog.stick.ly+128);
-  Serial.write(Ps3.data.analog.stick.rx+128);
 }
 /*↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑ Controller ↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑*/
 
@@ -147,6 +146,8 @@ void vdg_mtcnt_sendrec_dbg()
   digitalWrite(SPI_SS_FRONT, LOW);    //Pull SS low
   u4s_mtrec_fmtdata = vspi->transfer32(u4s_mtsend_fmtdata);
   digitalWrite(SPI_SS_FRONT, HIGH);   //Pull SS high
+
+  Serial.println(u4s_mtrec_fmtdata);
 }
 
 void vdg_mtcnt_reconly()
@@ -234,6 +235,13 @@ void vdg_mtcnt_idjdg()
 /*↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑ Motor ↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑*/
 
 /*↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓ Communication with Jetson ↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓*/
+void vdg_jetson_sendstr()
+{
+  // Serial.write(Ps3.data.analog.stick.ly+128);
+  // Serial.write(Ps3.data.analog.stick.rx+128);
+  Serial.println(Ps3.data.analog.stick.ly+128);
+  Serial.println(Ps3.data.analog.stick.rx+128);
+}
 
 void vdg_jetson_rectgt()
 {
@@ -283,13 +291,15 @@ void vdg_jetson_sendmtsts()
   u1t_jetson_fmtdatab1 = (uint8_t)((u4t_jetson_fmtdata & 0x0000FF00) >> 8);
   u1t_jetson_fmtdatab2 = (uint8_t)((u4t_jetson_fmtdata & 0x00FF0000) >> 16);
   u1t_jetson_fmtdatab3 = (uint8_t)((u4t_jetson_fmtdata & 0x0F000000) >> 24);
-  u1t_jetson_fmtdatab3 = u1t_jetson_fmtdatab3 | (u1g_mtsend_idfmtset << 4);
+  // u1t_jetson_fmtdatab3 = u1t_jetson_fmtdatab3 | (u1g_mtsend_idfmtset << 4);
+  u1t_jetson_fmtdatab3 = u1t_jetson_fmtdatab3 | (u1g_mtrec_fmtid << 4);
   // Rear Motor data
   u1t_jetson_rmtdatab0 = (uint8_t)((u4t_jetson_rmtdata & 0x000000FF) >> 0);
   u1t_jetson_rmtdatab1 = (uint8_t)((u4t_jetson_rmtdata & 0x0000FF00) >> 8);
   u1t_jetson_rmtdatab2 = (uint8_t)((u4t_jetson_rmtdata & 0x00FF0000) >> 16);
   u1t_jetson_rmtdatab3 = (uint8_t)((u4t_jetson_rmtdata & 0x0F000000) >> 24);
   u1t_jetson_rmtdatab3 = u1t_jetson_rmtdatab3 | (u1g_mtsend_idrmtset << 4);
+  // u1t_jetson_rmtdatab3 = u1t_jetson_rmtdatab3 | (u1g_cntr_idmoderq << 4);
 
   Serial.write(u1t_jetson_fmtdatab0);
   Serial.write(u1t_jetson_fmtdatab1);
@@ -299,6 +309,15 @@ void vdg_jetson_sendmtsts()
   Serial.write(u1t_jetson_rmtdatab1);
   Serial.write(u1t_jetson_rmtdatab2);
   Serial.write(u1t_jetson_rmtdatab3);
+
+  // Serial.println(u1t_jetson_fmtdatab0);
+  // Serial.println(u1t_jetson_fmtdatab1);
+  // Serial.println(u1t_jetson_fmtdatab2);
+  // Serial.println(u1t_jetson_fmtdatab3);
+  // Serial.println(u1t_jetson_rmtdatab0);
+  // Serial.println(u1t_jetson_rmtdatab1);
+  // Serial.println(u1t_jetson_rmtdatab2);
+  // Serial.println(u1t_jetson_rmtdatab3);
 }
 
 /*↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑ Communication with Jetson ↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑*/
@@ -313,43 +332,32 @@ void vdg_jetson_sendmtsts()
 /*↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓ Timer ↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓*/
 void IRAM_ATTR onTimer()               // Timer Interrupt
 {
-  digitalWrite(LED_PIN, !digitalRead(LED_PIN));
-
-  while(Ps3.isConnected())
-  {
-     // Jetsonからシリアル受信したデータバイト数が所定値(8Byte)に達した場合、Jetsonからの目標を更新
-    // if(Serial.available() == INCOMING_BYTE) { vdg_jetson_rectgt(); }
-    // vdg_mtcnt_sendrec();           //モータコントローラとSPI通信
-    vdg_mtcnt_sendrec_dbg();
-    // vdg_mtcnt_idjdg();              // コントローラ要求とモータ状態から要求ID判定
-    // vdg_jetson_sendstr();    // 前後左右操舵情報をJetsonに送信
-    // vdg_jetson_sendmtsts();        // フロント/リアモータ回転数、状態情報をJetsonに送信
-    // vdg_controller_battery();       // コントローラバッテリ残量表示
-    // Serial.println(recdata);
-  }
+  u1g_main_xtimer = 1;    // Timer割り込みフラグをON
 }
 /*↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑ Timer ↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑*/
 
 void setup()
 {
-  Serial.begin(115200);                  // Prepare to Serial Communication
+  Serial.begin(SERIAL_BAUDRATE);                  // Prepare to Serial Communication
   while (!Serial);                       // waiting for serial Comm preparation
-  Serial.println("プログラム開始");       // シリアル通信でメッセージをPCに送信
+  Serial.println("プログラム開始!");       // シリアル通信でメッセージをPCに送信
 
-  /*****Controller*****/
+  // /*****Controller*****/
   Ps3.attach(vdg_controller_get);       // ボタン入力イベント発生時の割り込み処理設定
   Ps3.begin("FC:F5:C4:45:75:8E");
+  while(!Ps3.isConnected());
+  Serial.println("Connected with Controller");       // シリアル通信でメッセージをPCに送信
 
-  /*****SPI*****/
+  // /*****SPI*****/
   vspi = new SPIClass(VSPI);            //インスタンス生成
   vspi->begin();                        //生成したvspiインスタンスのポインタからbegin()関数コール(ポインタからメソッドコール時は「->」)
   pinMode(SPI_SS_FRONT, OUTPUT);        //vspiインスタンスのSSを任意ポート指定し出力設定
   pinMode(SPI_SS_REAR, OUTPUT);         //vspiインスタンスのSSを任意ポート指定し出力設定
   vspi->beginTransaction(SPISettings(SPI_CLK_SET, SPI_MSBFIRST, SPI_MODE0));
 
-  /*****Servo PWM*****/
+  // /*****Servo PWM*****/
 
-  /*****Timer*****/
+  // /*****Timer*****/
   pinMode(LED_PIN, OUTPUT);
   timer = timerBegin(0, getApbFrequency()/1000000, true);
   timerAttachInterrupt(timer, &onTimer, true);
@@ -357,4 +365,21 @@ void setup()
   timerAlarmEnable(timer);
 }
 
-void loop(){}
+void loop()
+{
+  // Timer割り込みが発生した場合にメイン定周期を実施
+  if(u1g_main_xtimer == 1)
+  {
+    u1g_main_xtimer = 0;
+    digitalWrite(LED_PIN, !digitalRead(LED_PIN));   // Timer Loop確認用LED
+    // vdg_mtcnt_sendrec_dbg();
+
+    //  Jetsonからシリアル受信したデータバイト数が所定値(8Byte)に達した場合、Jetsonからの目標を更新
+    if(Serial.available() == INCOMING_BYTE) { vdg_jetson_rectgt(); }
+    vdg_mtcnt_sendrec();            //モータコントローラとSPI通信
+    vdg_mtcnt_idjdg();              // コントローラ要求とモータ状態から要求ID判定
+    vdg_jetson_sendstr();           // 前後左右操舵情報をJetsonに送信
+    vdg_jetson_sendmtsts();         // フロント/リアモータ回転数、状態情報をJetsonに送信
+    vdg_controller_battery();       // コントローラバッテリ残量表示
+  }
+}
